@@ -231,11 +231,6 @@ const UploadProductPage = () => {
               <Input id="link" type="url" value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://example.com" className="h-9 text-sm" />
             </div>
 
-            <div>
-              <Label htmlFor="imageUrl" className="text-xs">Image URL (optional)</Label>
-              <Input id="imageUrl" type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://example.com/image.png" className="h-9 text-sm" />
-            </div>
-
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-xs">Upload Images (PNG/JPG, max 500KB)</Label>
