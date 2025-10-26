@@ -56,8 +56,7 @@ export const generateSurveyQuestions = onCall(
 
       // Check if OpenAI API key is configured
       if (!openaiApiKey.value()) {
-        logger.warn("OpenAI API key not configured, returning fallback questions");
-        return {questions: getFallbackQuestions(productName, description, feedbackObjective)};
+        throw new Error("OpenAI API key not configured");
       }
 
       // Initialize OpenAI
@@ -66,32 +65,33 @@ export const generateSurveyQuestions = onCall(
       });
 
     const prompt = feedbackObjective 
-      ? `You are generating survey questions for a product called "${productName}" (${description}).
+      ? `Generate 3-5 survey questions for a product called "${productName}" described as: "${description}"
 
-CRITICAL: The primary goal is to gather feedback on: "${feedbackObjective}"
+PRIMARY FEEDBACK OBJECTIVE: "${feedbackObjective}"
 
-Generate up to 5 highly targeted survey questions that directly address this specific feedback objective. 
+CRITICAL RULES:
+1. EVERY question MUST directly help understand: "${feedbackObjective}"
+2. NO DUPLICATE questions - each question must address a UNIQUE aspect of the feedback objective
+3. NO GENERIC questions - make questions specific to the product and feedback objective
+4. Questions should explore DIFFERENT DIMENSIONS of the feedback objective
 
 Requirements:
-1. EVERY question must be relevant to understanding: "${feedbackObjective}"
-2. Questions should be specific, not generic
-3. Mix of question types: some short-answer (to understand "why"), some choice-based (for quick quantitative insights)
-4. For ALL single-choice questions, use 5-point Likert scales as options. Standard Likert scales should be:
-   - Agreement: "Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"
-   - Frequency: "Never", "Rarely", "Sometimes", "Often", "Always"
-   - Quality: "Poor", "Fair", "Good", "Very Good", "Excellent"
-   - Satisfaction: "Very Dissatisfied", "Dissatisfied", "Neutral", "Satisfied", "Very Satisfied"
-5. For multiple-choice questions, provide specific contextual options (not Likert scale)
-6. If the feedback objective mentions frequency (like "daily use"), include a question about usage frequency with Likert scale
-7. If the feedback objective asks about barriers or reasons, include questions that explore those barriers
-8. Generate 3-5 questions total
+1. Generate 3-5 questions total
+2. Mix of question types: short-answer (for "why" and details), single-choice (for quick metrics), multiple-choice (for specific barriers/features)
+3. For ALL single-choice questions, use 5-point Likert scales ONLY:
+   - Agreement: ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"]
+   - Frequency: ["Never", "Rarely", "Sometimes", "Often", "Always"]
+   - Quality: ["Poor", "Fair", "Good", "Very Good", "Excellent"]
+   - Satisfaction: ["Very Dissatisfied", "Dissatisfied", "Neutral", "Satisfied", "Very Satisfied"]
+4. For multiple-choice questions, create specific options relevant to the feedback objective
+5. Each question must uncover a DIFFERENT insight
 
 Return the response as a JSON array with this exact format:
 [
   {
     "question": "string",
     "type": "short-answer" | "single-choice" | "multiple-choice",
-    "choices": ["option1", "option2", ...] // only for choice types
+    "choices": ["option1", "option2", ...] // only for choice types, use EXACTLY 5 options for single-choice
   }
 ]
 
@@ -103,17 +103,12 @@ Example for feedback objective "understand if users will use this daily":
     "choices": ["Never", "Rarely", "Sometimes", "Often", "Always"]
   },
   {
-    "question": "I would use this product on a daily basis",
-    "type": "single-choice",
-    "choices": ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"]
-  },
-  {
     "question": "What factors would prevent you from using this product daily?",
     "type": "multiple-choice",
     "choices": ["Not useful enough", "Too complicated", "Not integrated into my workflow", "I prefer alternatives", "Other"]
   },
   {
-    "question": "Please explain your answer above in more detail",
+    "question": "What would make you use this product more frequently?",
     "type": "short-answer"
   }
 ]`
@@ -145,7 +140,13 @@ Return the response as a JSON array with this exact format:
       messages: [
         {
           role: "system",
-          content: `You are an expert survey designer specializing in user research. Your job is to create highly targeted, specific survey questions that directly address the stated feedback objectives. When a feedback objective is provided, generate questions that drill deep into that specific area rather than asking generic questions. Focus on actionable insights that will help the product founder make data-driven decisions.`,
+          content: `You are an expert survey designer. Generate DISTINCT, highly targeted questions. Rules:
+1. NEVER create duplicate or redundant questions
+2. Each question must explore a UNIQUE dimension of the feedback objective
+3. Make questions specific to the product - avoid generic survey questions
+4. Ensure questions work together to comprehensively understand the feedback objective
+5. Use Likert scales ONLY for single-choice questions
+6. Create contextual, specific options for multiple-choice questions`,
         },
         {
           role: "user",
@@ -180,129 +181,14 @@ Return the response as a JSON array with this exact format:
       logger.info(`Generated ${validatedQuestions.length} questions for product: ${productName}`);
       return {questions: validatedQuestions};
     } else {
-      // Fallback if parsing fails
-      logger.warn("Failed to parse AI response, returning fallback questions");
-      return {questions: getFallbackQuestions(productName, description, feedbackObjective)};
+      // Throw error if parsing fails
+      logger.error("Failed to parse AI response");
+      throw new Error("Failed to parse AI response");
     }
   } catch (error) {
     logger.error("Error generating survey questions", error);
-    // Return fallback questions on error
-    const {productName, description, feedbackObjective} = request.data as GenerateQuestionsRequest;
-    return {questions: getFallbackQuestions(productName, description, feedbackObjective)};
+    // Re-throw error instead of returning fallback
+    throw error;
   }
 }
 );
-
-/**
- * Fallback questions when AI is not available or fails
- */
-function getFallbackQuestions(productName: string, description: string, feedbackObjective?: string): QuestionSchema[] {
-  
-  // If feedback objective is provided, try to create tailored questions
-  if (feedbackObjective) {
-    const objective = feedbackObjective.toLowerCase();
-    const questions: QuestionSchema[] = [];
-    
-    // Check for daily/weekly use frequency questions
-    if (objective.includes("daily") || objective.includes("regularly") || objective.includes("often")) {
-      questions.push({
-        question: "How often do you plan to use this product?",
-        type: "single-choice",
-        choices: ["Daily", "Several times a week", "Once a week", "A few times a month", "Rarely or never"],
-      });
-    }
-    
-    // Check for "why not" or barrier questions
-    if (objective.includes("why not") || objective.includes("prevent") || objective.includes("barrier")) {
-      questions.push({
-        question: "What would prevent you from using this product more frequently?",
-        type: "multiple-choice",
-        choices: ["It's not useful enough", "Too complicated to use", "Not integrated into my workflow", "I prefer other solutions", "Other"],
-      });
-      questions.push({
-        question: "Please explain in more detail what prevents you from using this product",
-        type: "short-answer",
-      });
-    }
-    
-    // Check for satisfaction questions
-    if (objective.includes("satisfied") || objective.includes("satisfaction") || objective.includes("happy")) {
-      questions.push({
-        question: "How satisfied are you with this product?",
-        type: "single-choice",
-        choices: ["Very Dissatisfied", "Dissatisfied", "Neutral", "Satisfied", "Very Satisfied"],
-      });
-    }
-    
-    // Check for feature usage questions
-    if (objective.includes("feature") || objective.includes("use")) {
-      questions.push({
-        question: "Which features did you find most useful?",
-        type: "multiple-choice",
-        choices: ["Feature A", "Feature B", "Feature C", "Feature D"],
-      });
-    }
-    
-    // Check for design/UI questions
-    if (objective.includes("design") || objective.includes("ui") || objective.includes("interface") || objective.includes("layout")) {
-      questions.push({
-        question: "How would you rate the visual design and user interface?",
-        type: "single-choice",
-        choices: ["Poor", "Below Average", "Average", "Above Average", "Excellent"],
-      });
-    }
-    
-    // Always add one generic question if we have less than 3
-    if (questions.length < 3) {
-      questions.push({
-        question: "What improvements would make this product more valuable to you?",
-        type: "short-answer",
-      });
-    }
-    
-    // Fill up to 5 questions with generic ones if needed
-    while (questions.length < 5) {
-      questions.push({
-        question: `How would you rate your overall experience with ${productName}?`,
-        type: "single-choice",
-        choices: ["Very Poor", "Poor", "Average", "Good", "Excellent"],
-      });
-      if (questions.length >= 5) break;
-      
-      questions.push({
-        question: "What specific features or aspects would you like to see improved?",
-        type: "short-answer",
-      });
-      if (questions.length >= 5) break;
-    }
-    
-    return questions.slice(0, 5);
-  }
-  
-  // Default generic questions if no feedback objective
-  return [
-    {
-      question: `How would you rate your overall experience with ${productName}?`,
-      type: "single-choice",
-      choices: ["Very Poor", "Poor", "Average", "Good", "Excellent"],
-    },
-    {
-      question: "How easy was it to use this product?",
-      type: "single-choice",
-      choices: ["Very Difficult", "Difficult", "Neutral", "Easy", "Very Easy"],
-    },
-    {
-      question: "What specific features did you find most valuable?",
-      type: "short-answer",
-    },
-    {
-      question: "How likely are you to continue using this product?",
-      type: "single-choice",
-      choices: ["Not Likely", "Unlikely", "Neutral", "Likely", "Very Likely"],
-    },
-    {
-      question: "What challenges did you encounter while using the product?",
-      type: "short-answer",
-    },
-  ];
-}

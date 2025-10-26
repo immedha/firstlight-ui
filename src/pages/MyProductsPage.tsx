@@ -139,9 +139,9 @@ const MyProductsPage = () => {
                         href={selectedProduct.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:underline"
+                        className="text-primary hover:underline break-all"
                       >
-                        View Product
+                        {selectedProduct.link}
                       </a>
                     )}
                   </div>

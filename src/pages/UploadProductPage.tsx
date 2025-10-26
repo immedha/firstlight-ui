@@ -9,11 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Upload, Image as ImageIcon, Star, X, Save, Sparkles, FileEdit, FolderOpen } from 'lucide-react';
+import { Plus, Trash2, Upload, Image as ImageIcon, Star, X, Save, Sparkles } from 'lucide-react';
 import { ReviewSchema, ProductImage } from '@/types';
 import { toast } from 'sonner';
 import { uploadMultipleImages, validateImageFile } from '@/lib/storageUtils';
-import { generateSurveyQuestions, generateSurveyQuestionsFallback } from '@/lib/aiUtils';
+import { generateSurveyQuestions } from '@/lib/aiUtils';
 
 const UploadProductPage = () => {
   const navigate = useNavigate();
@@ -23,7 +23,6 @@ const UploadProductPage = () => {
   
   const allProjects = useAppSelector(state => state.projects.allProjects);
   const existingProduct = allProjects.find(p => p.id === projectId && p.founderId === userId);
-  const myProducts = allProjects.filter(p => p.founderId === userId);
   
   const [productName, setProductName] = useState('');
   const [description, setDescription] = useState('');
@@ -148,15 +147,6 @@ const UploadProductPage = () => {
     } catch (error) {
       console.error('Error generating questions:', error);
       toast.error('Failed to generate questions. Please try again or add them manually.');
-      
-      // Try fallback method on error
-      try {
-        const fallbackQuestions = generateSurveyQuestionsFallback(productName, description, feedbackObjective);
-        setQuestions(fallbackQuestions);
-        toast.info('Using fallback questions');
-      } catch (fallbackError) {
-        console.error('Fallback also failed:', fallbackError);
-      }
     } finally {
       setIsGenerating(false);
     }
@@ -221,46 +211,6 @@ const UploadProductPage = () => {
             {existingProduct ? 'Update your draft and publish when ready' : 'Share your product and create review questions'}
           </p>
         </div>
-
-        {myProducts.length > 0 && (
-          <Card className="p-4 mb-4">
-            <div className="flex items-center gap-2 mb-3">
-              <FolderOpen className="w-4 h-4 text-muted-foreground" />
-              <h2 className="text-sm font-semibold">Your Products</h2>
-            </div>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {myProducts.map(product => (
-                <div key={product.id} className="flex items-center justify-between p-2 rounded-md hover:bg-secondary/30 transition-colors">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{product.name}</p>
-                    <p className="text-xs text-muted-foreground">{product.status === 'draft' ? 'Draft' : 'Published'}</p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigate(`/add-product/${product.id}`)}
-                    className="h-7 text-xs"
-                  >
-                    <FileEdit className="w-3 h-3 mr-1.5" />
-                    Edit
-                  </Button>
-                </div>
-              ))}
-            </div>
-            {!projectId && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/my-products')}
-                className="w-full mt-3 h-8 text-xs"
-              >
-                View All Products
-              </Button>
-            )}
-          </Card>
-        )}
 
         <form className="space-y-4">
           <Card className="p-4 space-y-3">
