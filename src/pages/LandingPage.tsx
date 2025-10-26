@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Users, Sparkles, Target, MessageCircle, Zap } from 'lucide-react';
+import { InteractiveBackground } from '@/components/InteractiveBackground';
 
 const LandingPage = () => {
   const features = [
@@ -24,18 +25,8 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen relative">
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0" style={{ background: 'var(--gradient-mesh)' }} />
-        
-        {/* Floating orbs */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-float" />
-        <div className="absolute top-40 right-20 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float-slow" style={{ animationDelay: '1s' }} />
-        <div className="absolute bottom-20 left-1/4 w-80 h-80 bg-secondary/20 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: '2s' }} />
-        
-        {/* Gradient mesh overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
-      </div>
+      {/* Interactive Animated Background */}
+      <InteractiveBackground />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
