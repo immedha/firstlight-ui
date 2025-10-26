@@ -103,7 +103,7 @@ export const createProjectInDb = async (
       reviewSchema: cleanedReviewSchema,
       reviewsReceived: [],
       status: productData.status || 'draft', // Default to draft
-      feedbackObjective: productData.feedbackObjective || undefined
+      feedbackObjective: productData.feedbackObjective || ''
     };
     
     // Only include images field if it has a value
