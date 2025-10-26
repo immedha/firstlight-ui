@@ -70,7 +70,7 @@ const App = () => (
               <Route path="/add-product/:projectId" element={<ProtectedRoute><UploadProductPage /></ProtectedRoute>} />
               <Route path="/product/:projectId" element={<ViewProductPage />} />
               <Route path="/my-products" element={<ProtectedRoute><MyProductsPage /></ProtectedRoute>} />
-              <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+              <Route path="/analytics" element={<AnalyticsPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
