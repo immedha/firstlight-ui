@@ -9,10 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Upload, Image as ImageIcon, Star, X, Save } from 'lucide-react';
+import { Plus, Trash2, Upload, Image as ImageIcon, Star, X, Save, Sparkles } from 'lucide-react';
 import { ReviewSchema, ProductImage } from '@/types';
 import { toast } from 'sonner';
 import { uploadMultipleImages, validateImageFile } from '@/lib/storageUtils';
+import { generateSurveyQuestions, generateSurveyQuestionsFallback } from '@/lib/aiUtils';
 
 const UploadProductPage = () => {
   const navigate = useNavigate();
@@ -55,6 +56,7 @@ const UploadProductPage = () => {
   const [questions, setQuestions] = useState<ReviewSchema[]>(defaultQuestions);
   const [uploadedImages, setUploadedImages] = useState<ProductImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Load existing product data if editing
   useEffect(() => {
@@ -164,6 +166,37 @@ const UploadProductPage = () => {
       isPrimary: i === index
     }));
     setUploadedImages(updated);
+  };
+
+  const handleGenerateQuestions = async () => {
+    if (!productName.trim() || !description.trim()) {
+      toast.error('Please provide product name and description first');
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      toast.info('Generating survey questions...');
+      
+      const generatedQuestions = await generateSurveyQuestions(productName, description);
+      
+      setQuestions(generatedQuestions);
+      toast.success(`Generated ${generatedQuestions.length} survey questions!`);
+    } catch (error) {
+      console.error('Error generating questions:', error);
+      toast.error('Failed to generate questions. Please try again or add them manually.');
+      
+      // Try fallback method on error
+      try {
+        const fallbackQuestions = generateSurveyQuestionsFallback(productName, description);
+        setQuestions(fallbackQuestions);
+        toast.info('Using fallback questions');
+      } catch (fallbackError) {
+        console.error('Fallback also failed:', fallbackError);
+      }
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent, status: 'draft' | 'published') => {
@@ -372,11 +405,39 @@ const UploadProductPage = () => {
           <Card className="p-6 space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">Review Questions</h2>
-              <Button type="button" onClick={addQuestion} variant="outline" size="sm">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Question
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  type="button" 
+                  onClick={handleGenerateQuestions} 
+                  variant="default" 
+                  size="sm"
+                  disabled={isGenerating || !productName.trim() || !description.trim()}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {isGenerating ? 'Generating...' : 'Generate Questions'}
+                </Button>
+                <Button type="button" onClick={addQuestion} variant="outline" size="sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Question
+                </Button>
+              </div>
             </div>
+
+            {!productName.trim() || !description.trim() ? (
+              <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <p className="text-sm text-blue-900 dark:text-blue-200">
+                  💡 Fill in the product name and description above to enable AI question generation.
+                </p>
+              </div>
+            ) : (
+              <div className="p-4 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+                <p className="text-sm text-purple-900 dark:text-purple-200">
+                  ✨ Click "Generate Questions" to let AI create up to 5 tailored survey questions based on your product description. 
+                  Questions can be customized after generation.
+                </p>
+              </div>
+            )}
 
             {questions.length === 0 && (
               <p className="text-muted-foreground text-sm">
