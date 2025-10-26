@@ -35,10 +35,10 @@ const NotFound = () => {
               Go Home
             </Button>
           </Link>
-          <Link to="/projects">
+          <Link to="/products">
             <Button size="lg" variant="outline" className="w-full sm:w-auto">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Browse Projects
+              Browse Products
             </Button>
           </Link>
         </div>

@@ -14,20 +14,20 @@ const ProductsPage = () => {
   const userId = useAppSelector(state => state.user.userId);
   const userKarma = useAppSelector(state => state.user.karmaPoints);
   
-  // Memoize filtered projects to prevent infinite loop
-  const projects = useMemo(
+  // Memoize filtered products to prevent infinite loop
+  const products = useMemo(
     () => allProjects.filter(p => p.status === 'published'),
     [allProjects]
   );
   
-  const [sortedProjects, setSortedProjects] = useState<typeof projects>([]);
+  const [sortedProducts, setSortedProducts] = useState<typeof products>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const sortProjectsByTier = async () => {
+    const sortProductsByTier = async () => {
       if (!userId) {
-        // Not logged in - show all projects as-is
-        setSortedProjects(projects);
+        // Not logged in - show all products as-is
+        setSortedProducts(products);
         setLoading(false);
         return;
       }
@@ -35,11 +35,11 @@ const ProductsPage = () => {
       // User is logged in - sort by tier (same tier first)
       const userTier = KARMA_CONFIG.getTier(userKarma);
       
-      // Fetch founder tiers for all projects
-      const projectsWithTier = await Promise.all(
-        projects.map(async (project) => {
+      // Fetch founder tiers for all products
+      const productsWithTier = await Promise.all(
+        products.map(async (product) => {
           try {
-            const founderRef = doc(db, 'users', project.founderId);
+            const founderRef = doc(db, 'users', product.founderId);
             const founderDoc = await getDoc(founderRef);
             
             let founderTier = 3; // Default to tier 3 if fetch fails
@@ -49,14 +49,14 @@ const ProductsPage = () => {
             }
             
             return {
-              project,
+              product,
               tier: founderTier,
               isSameTier: founderTier === userTier
             };
           } catch (error) {
             console.error('Error checking founder tier:', error);
             return {
-              project,
+              product,
               tier: 3,
               isSameTier: false
             };
@@ -65,33 +65,33 @@ const ProductsPage = () => {
       );
 
       // Sort: same tier first, then others
-      const sorted = projectsWithTier
+      const sorted = productsWithTier
         .sort((a, b) => {
           if (a.isSameTier === b.isSameTier) {
             return 0; // Maintain original order within same tier
           }
           return a.isSameTier ? -1 : 1; // Same tier goes first
         })
-        .map(item => item.project);
+        .map(item => item.product);
 
-      setSortedProjects(sorted);
+      setSortedProducts(sorted);
       setLoading(false);
     };
 
-    sortProjectsByTier();
-  }, [projects, userId, userKarma]);
+    sortProductsByTier();
+  }, [products, userId, userKarma]);
 
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="text-center">
-          <p className="text-muted-foreground">Loading projects...</p>
+          <p className="text-muted-foreground">Loading products...</p>
         </div>
       </div>
     );
   }
 
-  if (sortedProjects.length === 0) {
+  if (sortedProducts.length === 0) {
     return (
       <div className="container mx-auto px-4 py-16">
         <motion.div
@@ -106,7 +106,7 @@ const ProductsPage = () => {
           <p className="text-muted-foreground mb-8">
             Be the first to share your product and start the feedback exchange!
           </p>
-          <Link to="/upload-project">
+          <Link to="/add-product">
             <Button size="lg" className="gradient-primary text-white">
               Add Your Product
             </Button>
@@ -123,21 +123,21 @@ const ProductsPage = () => {
         animate={{ opacity: 1, y: 0 }}
         className="mb-12"
       >
-        <h1 className="text-4xl font-bold mb-4">Browse Projects</h1>
+        <h1 className="text-4xl font-bold mb-4">Browse Products</h1>
         <p className="text-muted-foreground text-lg">
-          Explore projects from fellow founders and provide valuable feedback
+          Explore products from fellow founders and provide valuable feedback
         </p>
       </motion.div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sortedProjects.map((product, index) => (
+        {sortedProducts.map((product, index) => (
           <motion.div
             key={product.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
           >
-            <Link to={`/project/${product.id}`}>
+            <Link to={`/product/${product.id}`}>
               <Card className="overflow-hidden hover-lift cursor-pointer">
                 <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 relative overflow-hidden">
                   {(() => {

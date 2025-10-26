@@ -3,7 +3,7 @@ import { getAllProjectsAction, listenToAllProjectsAction } from './projectsActio
 import { setAllProjects } from './projectsSlice';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/firebase';
-import { Project } from '@/types';
+import { Product } from '@/types';
 import { store } from '../store';
 import { getAllProjectsFromDb } from '@/lib/dbQueries';
 
@@ -12,7 +12,7 @@ function* listenToAllProjects() {
   const q = query(projectsRef, orderBy("createdAt", "desc"));
   
   onSnapshot(q, (querySnapshot) => {
-    const allProjects: Project[] = [];
+    const allProjects: Product[] = [];
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       allProjects.push({
@@ -37,7 +37,7 @@ function* listenToAllProjects() {
 }
 
 function* getAllProjects() {
-  const projects: Project[] = yield call(getAllProjectsFromDb);
+    const projects: Product[] = yield call(getAllProjectsFromDb);
   yield put(setAllProjects(projects));
 }
 

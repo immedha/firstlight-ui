@@ -19,15 +19,15 @@ const MyProductsPage = () => {
   const allReviews = useAppSelector(state => state.reviews.allReviews);
   const userId = useAppSelector(state => state.user.userId);
   
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
   const [tempRating, setTempRating] = useState(0);
 
   const myProjects = allProjects.filter(p => p.founderId === userId);
-  const selectedProject = myProjects.find(p => p.id === selectedProjectId);
+  const selectedProduct = myProjects.find(p => p.id === selectedProductId);
   
-  const productReviews = selectedProject
-    ? allReviews.filter(r => r.projectId === selectedProject.id)
+  const productReviews = selectedProduct
+    ? allReviews.filter(r => r.projectId === selectedProduct.id)
     : [];
 
   const currentReview: ReviewGiven | null = productReviews[currentReviewIndex] || null;
@@ -91,7 +91,7 @@ const MyProductsPage = () => {
           <p className="text-muted-foreground mb-8">
             Add your first product to start receiving feedback from fellow founders!
           </p>
-          <Link to="/upload-product">
+          <Link to="/add-product">
             <Button size="lg" className="gradient-primary text-white">
               Add Your Product
             </Button>
@@ -116,7 +116,7 @@ const MyProductsPage = () => {
 
         <div className="mb-8">
           <label className="block text-sm font-medium mb-2">Select a Product</label>
-          <Select value={selectedProjectId || ''} onValueChange={setSelectedProjectId}>
+          <Select value={selectedProductId || ''} onValueChange={setSelectedProductId}>
             <SelectTrigger className="w-full md:w-96">
               <SelectValue placeholder="Choose a product" />
             </SelectTrigger>
@@ -135,26 +135,26 @@ const MyProductsPage = () => {
           </Select>
         </div>
 
-        {selectedProject && (
+        {selectedProduct && (
           <div className="space-y-8">
             <Card className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <h2 className="text-2xl font-bold">{selectedProject.name}</h2>
-                    <Badge variant={selectedProject.status === 'draft' ? 'secondary' : 'default'}>
-                      {selectedProject.status === 'draft' ? 'Draft' : 'Published'}
+                    <h2 className="text-2xl font-bold">{selectedProduct.name}</h2>
+                    <Badge variant={selectedProduct.status === 'draft' ? 'secondary' : 'default'}>
+                      {selectedProduct.status === 'draft' ? 'Draft' : 'Published'}
                     </Badge>
                   </div>
-                  <p className="text-muted-foreground">{selectedProject.description}</p>
+                  <p className="text-muted-foreground">{selectedProduct.description}</p>
                 </div>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <span>Total Reviews: {productReviews.length}</span>
-                  {selectedProject.status === 'published' && (
+                  {selectedProduct.status === 'published' && (
                     <a
-                      href={selectedProject.link}
+                      href={selectedProduct.link}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-primary hover:underline"
@@ -164,12 +164,12 @@ const MyProductsPage = () => {
                   )}
                 </div>
                 <div className="flex gap-2">
-                  {selectedProject.status === 'draft' && (
+                  {selectedProduct.status === 'draft' && (
                     <>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => navigate(`/upload-product/${selectedProject.id}`)}
+                        onClick={() => navigate(`/add-product/${selectedProduct.id}`)}
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
@@ -177,15 +177,15 @@ const MyProductsPage = () => {
                       <Button
                         size="sm"
                         className="gradient-primary text-white"
-                        onClick={() => handlePublishProduct(selectedProject.id)}
+                        onClick={() => handlePublishProduct(selectedProduct.id)}
                       >
                         <Send className="w-4 h-4 mr-2" />
                         Publish
                       </Button>
                     </>
                   )}
-                  {selectedProject.status === 'published' && (
-                    <Link to={`/product/${selectedProject.id}`}>
+                  {selectedProduct.status === 'published' && (
+                    <Link to={`/product/${selectedProduct.id}`}>
                       <Button variant="outline" size="sm">
                         <Eye className="w-4 h-4 mr-2" />
                         View
@@ -196,14 +196,14 @@ const MyProductsPage = () => {
               </div>
             </Card>
 
-            {selectedProject.status === 'draft' ? (
+            {selectedProduct.status === 'draft' ? (
               <Card className="p-12 text-center">
                 <h3 className="text-xl font-semibold mb-2">Product is a Draft</h3>
                 <p className="text-muted-foreground mb-4">
                   Publish your product to start receiving reviews!
                 </p>
                 <Button
-                  onClick={() => handlePublishProduct(selectedProject.id)}
+                  onClick={() => handlePublishProduct(selectedProduct.id)}
                   className="gradient-primary text-white"
                 >
                   <Send className="w-4 h-4 mr-2" />

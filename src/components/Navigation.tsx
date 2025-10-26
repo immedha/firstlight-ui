@@ -17,13 +17,13 @@ const Navigation = () => {
 
   // Base nav items that everyone sees
   const baseNavItems = [
-    { path: '/projects', label: 'Browse Products', icon: Grid3x3 },
+    { path: '/products', label: 'Browse Products', icon: Grid3x3 },
   ];
 
   // Auth-only nav items
   const authNavItems = userId ? [
-    { path: '/upload-project', label: 'Add Product', icon: Upload },
-    { path: '/my-projects', label: 'My Products', icon: FolderOpen },
+    { path: '/add-product', label: 'Add Product', icon: Upload },
+    { path: '/my-products', label: 'My Products', icon: FolderOpen },
   ] : [];
 
   const navItems = [...baseNavItems, ...authNavItems];

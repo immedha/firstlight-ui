@@ -95,7 +95,7 @@ const ViewProductPage = () => {
           <Link to="/products">
             <Button variant="outline">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Projects
+              Back to Products
             </Button>
           </Link>
         </Card>
@@ -115,7 +115,7 @@ const ViewProductPage = () => {
           <Link to="/products">
             <Button variant="outline">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Projects
+              Back to Products
             </Button>
           </Link>
         </Card>
@@ -176,7 +176,7 @@ const ViewProductPage = () => {
       <Link to="/products">
         <Button variant="ghost" className="mb-6">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Projects
+          Back to Products
         </Button>
       </Link>
 

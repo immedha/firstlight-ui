@@ -57,20 +57,20 @@ function* createProject(action: createProjectActionFormat) {
   try {
     const userId = store.getState().user.userId;
     if (!userId) {
-      yield put(setPageStateInfoAction({ type: 'error', message: 'You must be logged in to create a project!' }));
+      yield put(setPageStateInfoAction({ type: 'error', message: 'You must be logged in to create a product!' }));
       return;
     }
 
     yield call(createProjectInDb, userId, action.payload);
     
-    // Fetch updated projects list from the database
+    // Fetch updated products list from the database
     const projects = yield call(getAllProjectsFromDb);
     yield put(setAllProjects(projects));
     
-    yield put(setPageStateInfoAction({ type: 'success', message: 'Project created successfully!' }));
+    yield put(setPageStateInfoAction({ type: 'success', message: 'Product created successfully!' }));
   } catch (error: any) {
     console.error(error);
-    yield put(setPageStateInfoAction({ type: 'error', message: 'Failed to create project. Please try again!' }));
+    yield put(setPageStateInfoAction({ type: 'error', message: 'Failed to create product. Please try again!' }));
   }
 }
 
@@ -78,21 +78,21 @@ function* updateProject(action: updateProjectActionFormat) {
   try {
     const userId = store.getState().user.userId;
     if (!userId) {
-      yield put(setPageStateInfoAction({ type: 'error', message: 'You must be logged in to update a project!' }));
+      yield put(setPageStateInfoAction({ type: 'error', message: 'You must be logged in to update a product!' }));
       return;
     }
 
-    const { projectId, ...projectData } = action.payload;
-    yield call(updateProjectInDb, projectId, projectData);
+    const { projectId, ...productData } = action.payload;
+    yield call(updateProjectInDb, projectId, productData); // projectId kept for route/db compatibility
     
-    // Fetch updated projects list from the database
+    // Fetch updated products list from the database
     const projects = yield call(getAllProjectsFromDb);
     yield put(setAllProjects(projects));
     
-    yield put(setPageStateInfoAction({ type: 'success', message: 'Project updated successfully!' }));
+    yield put(setPageStateInfoAction({ type: 'success', message: 'Product updated successfully!' }));
   } catch (error: any) {
     console.error(error);
-    yield put(setPageStateInfoAction({ type: 'error', message: error.message || 'Failed to update project. Please try again!' }));
+    yield put(setPageStateInfoAction({ type: 'error', message: error.message || 'Failed to update product. Please try again!' }));
   }
 }
 
@@ -100,20 +100,20 @@ function* publishProject(action: publishProjectActionFormat) {
   try {
     const userId = store.getState().user.userId;
     if (!userId) {
-      yield put(setPageStateInfoAction({ type: 'error', message: 'You must be logged in to publish a project!' }));
+      yield put(setPageStateInfoAction({ type: 'error', message: 'You must be logged in to publish a product!' }));
       return;
     }
 
-    yield call(publishProjectInDb, action.payload.projectId);
+    yield call(publishProjectInDb, action.payload.projectId); // projectId from action payload for compatibility
     
-    // Fetch updated projects list from the database
+    // Fetch updated products list from the database
     const projects = yield call(getAllProjectsFromDb);
     yield put(setAllProjects(projects));
     
-    yield put(setPageStateInfoAction({ type: 'success', message: 'Project published successfully!' }));
+    yield put(setPageStateInfoAction({ type: 'success', message: 'Product published successfully!' }));
   } catch (error: any) {
     console.error(error);
-    yield put(setPageStateInfoAction({ type: 'error', message: error.message || 'Failed to publish project. Please try again!' }));
+    yield put(setPageStateInfoAction({ type: 'error', message: error.message || 'Failed to publish product. Please try again!' }));
   }
 }
 

@@ -1,9 +1,9 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { type Project } from "@/types";
+import { type Product } from "@/types";
 import { RootState } from "../store";
 
 interface ProjectsSliceState {
-  allProjects: Project[];
+  allProjects: Product[];
 }
 
 const initialState: ProjectsSliceState = {
@@ -14,7 +14,7 @@ const projectsSlice = createSlice({
   name: "projects",
   initialState,
   reducers: {
-    setAllProjects: (state, action: PayloadAction<Project[]>) => {
+    setAllProjects: (state, action: PayloadAction<Product[]>) => {
       state.allProjects = action.payload;
     },
   },

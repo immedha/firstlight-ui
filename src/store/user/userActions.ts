@@ -21,7 +21,7 @@ export interface createProjectActionFormat {
 export const createProjectAction = createAction<createProjectActionPayload>('user/createProjectAction');
 
 export interface updateProjectActionPayload extends createProjectActionPayload {
-  projectId: string;
+  projectId: string; // Keep as projectId for backward compatibility with routes and database
 }
 
 export interface updateProjectActionFormat {
@@ -32,7 +32,7 @@ export interface updateProjectActionFormat {
 export const updateProjectAction = createAction<updateProjectActionPayload>('user/updateProjectAction');
 
 export interface publishProjectActionPayload {
-  projectId: string;
+  projectId: string; // Keep as projectId for backward compatibility with routes and database
 }
 
 export interface publishProjectActionFormat {

@@ -59,11 +59,11 @@ const App = () => (
             <Navigation />
             <Routes>
               <Route path="/" element={<LandingPage />} />
-              <Route path="/projects" element={<ProductsPage />} />
-              <Route path="/upload-project" element={<UploadProductPage />} />
-              <Route path="/upload-project/:projectId" element={<UploadProductPage />} />
-              <Route path="/project/:projectId" element={<ViewProductPage />} />
-              <Route path="/my-projects" element={<MyProductsPage />} />
+              <Route path="/products" element={<ProductsPage />} />
+              <Route path="/add-product" element={<UploadProductPage />} />
+              <Route path="/add-product/:projectId" element={<UploadProductPage />} />
+              <Route path="/product/:projectId" element={<ViewProductPage />} />
+              <Route path="/my-products" element={<MyProductsPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

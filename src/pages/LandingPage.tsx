@@ -8,7 +8,7 @@ const LandingPage = () => {
     {
       icon: Users,
       title: 'Peer Feedback',
-      description: 'Connect with fellow founders and exchange valuable insights on early-stage projects'
+      description: 'Connect with fellow founders and exchange valuable insights on early-stage products'
     },
     {
       icon: MessageCircle,
@@ -52,19 +52,19 @@ const LandingPage = () => {
             </h1>
 
             <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
-              Share your early-stage projects, receive structured feedback, and help other founders improve their products in a collaborative peer-to-peer feedback loop.
+              Share your early-stage products, receive structured feedback, and help other founders improve their products in a collaborative peer-to-peer feedback loop.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/projects">
+              <Link to="/products">
                 <Button size="lg" className="gradient-primary text-white group w-full sm:w-auto">
                   Start Getting Feedback
                   <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Link to="/upload-project">
+              <Link to="/add-product">
                 <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                  Upload Your Project
+                  Add Your Product
                 </Button>
               </Link>
             </div>
@@ -125,9 +125,9 @@ const LandingPage = () => {
               <p className="text-muted-foreground text-lg mb-8">
                 Join the community of founders helping each other build better products
               </p>
-              <Link to="/projects">
+              <Link to="/products">
                 <Button size="lg" className="gradient-primary text-white">
-                  Browse Projects
+                  Browse Products
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </Link>

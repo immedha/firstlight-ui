@@ -49,7 +49,7 @@ export const initializeUserInDb = async (email: string, userId: string, displayN
 
 export const createProjectInDb = async (
   userId: string, 
-  projectData: {
+  productData: {
     name: string;
     description: string;
     link: string;
@@ -60,10 +60,10 @@ export const createProjectInDb = async (
   }
 ): Promise<void> => {
   try {
-    const projectId = uuidv4();
+    const productId = uuidv4();
     
     // Filter out empty choices from review schema
-    const cleanedReviewSchema = projectData.reviewSchema.map(question => {
+    const cleanedReviewSchema = productData.reviewSchema.map(question => {
       if (question.type === 'short-answer') {
         return question; // Short answer questions don't have choices
       }
@@ -81,44 +81,44 @@ export const createProjectInDb = async (
     });
     
     // Determine the imageUrl (primary image if available, otherwise use legacy imageUrl)
-    let imageUrl = projectData.imageUrl || '';
-    if (projectData.images && projectData.images.length > 0) {
-      const primaryImage = projectData.images.find(img => img.isPrimary);
+    let imageUrl = productData.imageUrl || '';
+    if (productData.images && productData.images.length > 0) {
+      const primaryImage = productData.images.find(img => img.isPrimary);
       if (primaryImage) {
         imageUrl = primaryImage.url;
       } else {
-        imageUrl = projectData.images[0].url;
+        imageUrl = productData.images[0].url;
       }
     }
 
-    // Build project object, only including images if defined
-    const project: any = {
+    // Build product object, only including images if defined
+    const product: any = {
       founderId: userId,
-      name: projectData.name,
-      description: projectData.description,
-      link: projectData.link,
+      name: productData.name,
+      description: productData.description,
+      link: productData.link,
       imageUrl: imageUrl, // Primary image URL for backward compatibility
       createdAt: formatDate(),
       reviewSchema: cleanedReviewSchema,
       reviewsReceived: [],
-      status: projectData.status || 'draft' // Default to draft
+      status: productData.status || 'draft' // Default to draft
     };
     
     // Only include images field if it has a value
-    if (projectData.images && projectData.images.length > 0) {
-      project.images = projectData.images;
+    if (productData.images && productData.images.length > 0) {
+      product.images = productData.images;
     }
     
-    // Create project document in projects collection
-    const projectRef = doc(db, "projects", projectId);
-    await setDoc(projectRef, project);
-    // Add project to user's uploaded projects
+    // Create product document in projects collection
+    const productRef = doc(db, "projects", productId);
+    await setDoc(productRef, product);
+    // Add product to user's uploaded products
     const userRef = doc(db, "users", userId);
     await updateDoc(userRef, {
-      uploadedProjects: arrayUnion(projectId)
+      uploadedProjects: arrayUnion(productId)
     });
   } catch (error) {
-    throw Error(`Error creating project: ${error}`);
+    throw Error(`Error creating product: ${error}`);
   }
 }
 
@@ -310,8 +310,8 @@ export const getUserDisplayNameById = async (userId: string): Promise<string> =>
 }
 
 export const updateProjectInDb = async (
-  projectId: string,
-  projectData: {
+  productId: string,
+  productData: {
     name: string;
     description: string;
     link: string;
@@ -321,20 +321,20 @@ export const updateProjectInDb = async (
   }
 ): Promise<void> => {
   try {
-    const projectRef = doc(db, "projects", projectId);
-    const projectDoc = await getDoc(projectRef);
+    const productRef = doc(db, "projects", productId);
+    const productDoc = await getDoc(productRef);
     
-    if (!projectDoc.exists()) {
-      throw new Error("Project not found");
+    if (!productDoc.exists()) {
+      throw new Error("Product not found");
     }
     
-    const currentData = projectDoc.data();
+    const currentData = productDoc.data();
     if (currentData.status === 'published') {
-      throw new Error("Cannot edit published projects");
+      throw new Error("Cannot edit published products");
     }
     
     // Filter out empty choices from review schema
-    const cleanedReviewSchema = projectData.reviewSchema.map(question => {
+    const cleanedReviewSchema = productData.reviewSchema.map(question => {
       if (question.type === 'short-answer') {
         return question;
       }
@@ -351,54 +351,54 @@ export const updateProjectInDb = async (
     });
     
     // Determine the imageUrl
-    let imageUrl = projectData.imageUrl || '';
-    if (projectData.images && projectData.images.length > 0) {
-      const primaryImage = projectData.images.find(img => img.isPrimary);
+    let imageUrl = productData.imageUrl || '';
+    if (productData.images && productData.images.length > 0) {
+      const primaryImage = productData.images.find(img => img.isPrimary);
       if (primaryImage) {
         imageUrl = primaryImage.url;
       } else {
-        imageUrl = projectData.images[0].url;
+        imageUrl = productData.images[0].url;
       }
     }
     
     // Build update object, only including images if defined
     const updateData: any = {
-      name: projectData.name,
-      description: projectData.description,
-      link: projectData.link,
+      name: productData.name,
+      description: productData.description,
+      link: productData.link,
       reviewSchema: cleanedReviewSchema,
       imageUrl: imageUrl
     };
     
     // Only include images field if it has a value
-    if (projectData.images && projectData.images.length > 0) {
-      updateData.images = projectData.images;
+    if (productData.images && productData.images.length > 0) {
+      updateData.images = productData.images;
     }
     
-    await updateDoc(projectRef, updateData);
+    await updateDoc(productRef, updateData);
   } catch (error) {
-    throw Error(`Error updating project: ${error}`);
+    throw Error(`Error updating product: ${error}`);
   }
 }
 
-export const publishProjectInDb = async (projectId: string): Promise<void> => {
+export const publishProjectInDb = async (productId: string): Promise<void> => {
   try {
-    const projectRef = doc(db, "projects", projectId);
-    const projectDoc = await getDoc(projectRef);
+    const productRef = doc(db, "projects", productId);
+    const productDoc = await getDoc(productRef);
     
-    if (!projectDoc.exists()) {
-      throw new Error("Project not found");
+    if (!productDoc.exists()) {
+      throw new Error("Product not found");
     }
     
-    const currentData = projectDoc.data();
+    const currentData = productDoc.data();
     if (currentData.status === 'published') {
-      throw new Error("Project is already published");
+      throw new Error("Product is already published");
     }
     
-    await updateDoc(projectRef, {
+    await updateDoc(productRef, {
       status: 'published'
     });
   } catch (error) {
-    throw Error(`Error publishing project: ${error}`);
+    throw Error(`Error publishing product: ${error}`);
   }
 }

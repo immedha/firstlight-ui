@@ -69,7 +69,7 @@ const UploadProductPage = () => {
       }
     } else if (existingProduct && existingProduct.status === 'published') {
       toast.error('Cannot edit published products');
-      navigate('/my-projects');
+      navigate('/my-products');
     }
   }, [existingProduct, navigate]);
 
@@ -226,7 +226,7 @@ const UploadProductPage = () => {
       dispatch(createProjectAction(productData));
     }
     
-    navigate('/my-projects');
+    navigate('/my-products');
   };
 
   return (
