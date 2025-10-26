@@ -2,7 +2,7 @@ import { doc, setDoc, getDoc, updateDoc, arrayUnion, orderBy, query, getDocs, co
 import { db } from "../firebase";
 import { formatDate } from "./utils";
 import { v4 as uuidv4 } from 'uuid';
-import { FilledReviewSchema, Project, ReviewGiven, ReviewSchema } from "@/types";
+import { FilledReviewSchema, Project, ProjectImage, ReviewGiven, ReviewSchema } from "@/types";
 
 export interface ProjectDatabaseData {
   founderId: string;
@@ -10,6 +10,7 @@ export interface ProjectDatabaseData {
   description: string;
   link: string;
   imageUrl: string;
+  images?: ProjectImage[];
   createdAt: string;
   reviewSchema: ReviewSchema[];
   reviewsReceived: string[];
@@ -50,6 +51,8 @@ export const createProjectInDb = async (
     description: string;
     link: string;
     reviewSchema: ReviewSchema[];
+    imageUrl?: string;
+    images?: ProjectImage[];
   }
 ): Promise<void> => {
   try {
@@ -73,12 +76,24 @@ export const createProjectInDb = async (
       return question;
     });
     
+    // Determine the imageUrl (primary image if available, otherwise use legacy imageUrl)
+    let imageUrl = projectData.imageUrl || '';
+    if (projectData.images && projectData.images.length > 0) {
+      const primaryImage = projectData.images.find(img => img.isPrimary);
+      if (primaryImage) {
+        imageUrl = primaryImage.url;
+      } else {
+        imageUrl = projectData.images[0].url;
+      }
+    }
+
     const project: ProjectDatabaseData = {
       founderId: userId,
       name: projectData.name,
       description: projectData.description,
       link: projectData.link,
-      imageUrl: '', // Will be handled later
+      imageUrl: imageUrl, // Primary image URL for backward compatibility
+      images: projectData.images, // Full array of images
       createdAt: formatDate(),
       reviewSchema: cleanedReviewSchema,
       reviewsReceived: []
@@ -110,6 +125,7 @@ export const getAllProjectsFromDb = async (): Promise<Project[]> => {
       description: data.description || "",
       link: data.link || "",
       imageUrl: data.imageUrl || "",
+      images: data.images || undefined,
       createdAt: data.createdAt || "",
       reviewSchema: data.reviewSchema || [],
       reviewsReceived: data.reviewsReceived || []

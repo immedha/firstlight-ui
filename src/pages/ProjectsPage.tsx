@@ -57,19 +57,27 @@ const ProjectsPage = () => {
             <Link to={`/project/${project.id}`}>
               <Card className="overflow-hidden hover-lift cursor-pointer">
                 <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 relative overflow-hidden">
-                  {project.imageUrl ? (
-                    <img
-                      src={project.imageUrl}
-                      alt={project.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-4xl font-bold text-primary/30">
-                        {project.name.charAt(0)}
-                      </span>
-                    </div>
-                  )}
+                  {(() => {
+                    // Use primary image from images array if available, otherwise use imageUrl
+                    const displayImageUrl = 
+                      project.images?.find(img => img.isPrimary)?.url || 
+                      project.images?.[0]?.url || 
+                      project.imageUrl;
+                    
+                    return displayImageUrl ? (
+                      <img
+                        src={displayImageUrl}
+                        alt={project.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-4xl font-bold text-primary/30">
+                          {project.name.charAt(0)}
+                        </span>
+                      </div>
+                    );
+                  })()}
                   <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm px-2 py-1 rounded-md text-xs flex items-center gap-1">
                     <MessageSquare className="w-3 h-3" />
                     {project.reviewsReceived.length}
