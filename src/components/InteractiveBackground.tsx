@@ -42,7 +42,7 @@ export const InteractiveBackground = () => {
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
       {/* Gradient mesh background */}
       <motion.div 
-        className="absolute inset-0"
+        className="absolute inset-0 opacity-40"
         style={{ background: 'var(--gradient-mesh)' }}
         animate={{
           backgroundPosition: [`${mousePosition.x}% ${mousePosition.y}%`, `${mousePosition.x + 10}% ${mousePosition.y + 10}%`]
@@ -52,7 +52,7 @@ export const InteractiveBackground = () => {
 
       {/* Large animated gradient orbs */}
       <motion.div 
-        className="absolute w-96 h-96 rounded-full blur-3xl opacity-30"
+        className="absolute w-[500px] h-[500px] rounded-full blur-3xl opacity-50"
         style={{
           background: 'radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)',
           left: `${20 + mousePosition.x * 0.05}%`,
@@ -71,7 +71,7 @@ export const InteractiveBackground = () => {
       />
 
       <motion.div 
-        className="absolute w-80 h-80 rounded-full blur-3xl opacity-25"
+        className="absolute w-[450px] h-[450px] rounded-full blur-3xl opacity-45"
         style={{
           background: 'radial-gradient(circle, hsl(var(--accent)) 0%, transparent 70%)',
           right: `${15 + mousePosition.x * 0.03}%`,
@@ -91,7 +91,7 @@ export const InteractiveBackground = () => {
       />
 
       <motion.div 
-        className="absolute w-72 h-72 rounded-full blur-3xl opacity-20"
+        className="absolute w-[400px] h-[400px] rounded-full blur-3xl opacity-40"
         style={{
           background: 'radial-gradient(circle, hsl(var(--secondary)) 0%, transparent 70%)',
           left: `${40 + mousePosition.x * 0.04}%`,
@@ -145,11 +145,14 @@ export const InteractiveBackground = () => {
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
+              style={{
+                filter: 'drop-shadow(0 0 8px hsl(var(--primary) / 0.4))',
+              }}
             >
               <ParticleIcon
                 size={particle.size}
-                className="text-primary/10"
-                strokeWidth={1.5}
+                className="text-primary/30"
+                strokeWidth={2}
               />
             </motion.div>
           </motion.div>
@@ -158,7 +161,7 @@ export const InteractiveBackground = () => {
 
       {/* Subtle grid pattern */}
       <div 
-        className="absolute inset-0 opacity-[0.03]"
+        className="absolute inset-0 opacity-[0.08]"
         style={{
           backgroundImage: `linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)`,
           backgroundSize: '50px 50px',
@@ -166,7 +169,7 @@ export const InteractiveBackground = () => {
       />
 
       {/* Gradient overlay for smooth blending */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/60 to-background/90" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-background/50 to-background/80" />
     </div>
   );
 };
