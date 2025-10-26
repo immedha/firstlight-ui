@@ -91,18 +91,24 @@ export const createProjectInDb = async (
       }
     }
 
-    const project: ProjectDatabaseData = {
+    // Build project object, only including images if defined
+    const project: any = {
       founderId: userId,
       name: projectData.name,
       description: projectData.description,
       link: projectData.link,
       imageUrl: imageUrl, // Primary image URL for backward compatibility
-      images: projectData.images, // Full array of images
       createdAt: formatDate(),
       reviewSchema: cleanedReviewSchema,
       reviewsReceived: [],
       status: projectData.status || 'draft' // Default to draft
     };
+    
+    // Only include images field if it has a value
+    if (projectData.images && projectData.images.length > 0) {
+      project.images = projectData.images;
+    }
+    
     // Create project document in projects collection
     const projectRef = doc(db, "projects", projectId);
     await setDoc(projectRef, project);
@@ -355,14 +361,21 @@ export const updateProjectInDb = async (
       }
     }
     
-    await updateDoc(projectRef, {
+    // Build update object, only including images if defined
+    const updateData: any = {
       name: projectData.name,
       description: projectData.description,
       link: projectData.link,
       reviewSchema: cleanedReviewSchema,
-      imageUrl: imageUrl,
-      images: projectData.images
-    });
+      imageUrl: imageUrl
+    };
+    
+    // Only include images field if it has a value
+    if (projectData.images && projectData.images.length > 0) {
+      updateData.images = projectData.images;
+    }
+    
+    await updateDoc(projectRef, updateData);
   } catch (error) {
     throw Error(`Error updating project: ${error}`);
   }
