@@ -301,7 +301,7 @@ const UploadProductPage = () => {
                   {uploadedImages.map((img, index) => (
                     <div key={index} className="relative group">
                       <div className="aspect-video border rounded-md overflow-hidden relative" style={{ borderColor: img.isPrimary ? 'hsl(var(--primary))' : 'transparent', borderWidth: img.isPrimary ? '2px' : '1px' }}>
-                        <img src={img.url} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
+                        <img src={img.url} alt={`Upload ${index + 1}`} className="w-full h-full" />
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
                           <Button type="button" variant="secondary" size="sm" onClick={() => setPrimaryImage(index)} disabled={img.isPrimary} className="h-6 text-xs px-2">
                             <Star className={`w-3 h-3 ${img.isPrimary ? 'fill-yellow-400 text-yellow-400' : ''}`} />
