@@ -40,20 +40,18 @@ const Navigation = () => {
     <motion.nav
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="sticky top-0 z-50 glass-effect border-b"
+      className="sticky top-0 z-50 glass-effect border-b backdrop-blur-xl"
     >
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="relative">
-              <Sparkles className="w-6 h-6 text-primary group-hover:animate-glow-pulse" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+      <div className="container mx-auto px-3 sm:px-4">
+        <div className="flex items-center justify-between h-14">
+          <Link to="/" className="flex items-center gap-1.5 group">
+            <Sparkles className="w-5 h-5 text-primary group-hover:animate-glow-pulse transition-all" />
+            <span className="text-base sm:text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               First User
             </span>
           </Link>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -62,18 +60,18 @@ const Navigation = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className="relative px-4 py-2 rounded-lg transition-colors"
+                  className="relative px-2 sm:px-3 py-1.5 rounded-md transition-all hover:scale-105"
                 >
-                  <div className={`flex items-center gap-2 ${
+                  <div className={`flex items-center gap-1.5 ${
                     isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
                   }`}>
                     <Icon className="w-4 h-4" />
-                    <span className="hidden md:inline text-sm font-medium">{item.label}</span>
+                    <span className="hidden sm:inline text-xs font-medium">{item.label}</span>
                   </div>
                   {isActive && (
                     <motion.div
                       layoutId="activeNav"
-                      className="absolute inset-0 bg-primary/10 rounded-lg -z-10"
+                      className="absolute inset-0 bg-primary/10 rounded-md -z-10"
                       transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                     />
                   )}
@@ -84,21 +82,21 @@ const Navigation = () => {
             {userId ? (
               <HoverCard openDelay={0} closeDelay={0}>
                 <HoverCardTrigger asChild>
-                  <button className="flex items-center gap-2 ml-2 px-3 py-2 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer">
-                    <span className="text-sm font-medium hidden md:inline">{displayName}</span>
+                  <button className="flex items-center gap-1.5 ml-1 px-2 sm:px-3 py-1.5 rounded-md hover:bg-secondary/50 transition-all hover:scale-105 cursor-pointer">
+                    <span className="text-xs font-medium hidden sm:inline">{displayName}</span>
                     <Trophy className={`w-4 h-4 ${
                       userTier === 1 ? 'text-yellow-500' : userTier === 2 ? 'text-blue-500' : 'text-gray-400'
                     }`} />
                   </button>
                 </HoverCardTrigger>
-                <HoverCardContent className="w-64 p-4 space-y-3">
+                <HoverCardContent className="w-56 p-3 space-y-2">
                   <div>
-                    <p className="text-sm font-medium mb-1">Karma Points</p>
+                    <p className="text-xs font-medium mb-1">Karma Points</p>
                     <div className="flex items-center gap-2">
-                      <Trophy className={`w-5 h-5 ${
+                      <Trophy className={`w-4 h-4 ${
                         userTier === 1 ? 'text-yellow-500' : userTier === 2 ? 'text-blue-500' : 'text-gray-400'
                       }`} />
-                      <span className="text-2xl font-bold">{karmaPoints}</span>
+                      <span className="text-xl font-bold">{karmaPoints}</span>
                       <span className="text-xs text-muted-foreground">
                         ({KARMA_CONFIG.getTierName(userTier)})
                       </span>
@@ -109,18 +107,18 @@ const Navigation = () => {
                       variant="ghost" 
                       size="sm" 
                       onClick={handleSignOut}
-                      className="w-full justify-start"
+                      className="w-full justify-start h-8 text-xs"
                     >
-                      <LogOut className="w-4 h-4 mr-2" />
+                      <LogOut className="w-3 h-3 mr-2" />
                       Sign Out
                     </Button>
                   </div>
                 </HoverCardContent>
               </HoverCard>
             ) : (
-              <Button variant="default" size="sm" onClick={handleSignIn} className="ml-2">
-                <LogIn className="w-4 h-4" />
-                <span className="hidden md:inline ml-2">Sign In</span>
+              <Button variant="default" size="sm" onClick={handleSignIn} className="ml-1 h-8 text-xs px-2 sm:px-3">
+                <LogIn className="w-3 h-3" />
+                <span className="hidden sm:inline ml-1.5">Sign In</span>
               </Button>
             )}
           </div>

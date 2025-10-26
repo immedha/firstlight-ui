@@ -1,4 +1,4 @@
-import { ReviewSchema, ProjectImage } from "@/types";
+import { ReviewSchema, ProductImage } from "@/types";
 import { createAction } from "@reduxjs/toolkit";
 
 export const logOutAction = createAction('user/logOutAction');
@@ -10,7 +10,7 @@ export interface createProjectActionPayload {
   link: string;
   reviewSchema: ReviewSchema[];
   imageUrl?: string;
-  images?: ProjectImage[];
+  images?: ProductImage[];
 }
 
 export interface createProjectActionFormat {
