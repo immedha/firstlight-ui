@@ -11,7 +11,6 @@ export interface FilledReviewSchema extends ReviewSchema {
 export interface Project {
   id: string;
   founderId: string;
-  founderName: string;
   name: string;
   description: string;
   link: string;
@@ -23,7 +22,7 @@ export interface Project {
 
 export interface ReviewGiven {
   id: string;
-  reviewerName: string;
+  reviewerId: string;
   projectId: string;
   filledReviewSchema: FilledReviewSchema[];
   createdAt: string;

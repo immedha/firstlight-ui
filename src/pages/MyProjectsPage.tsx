@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { updateReviewQuality } from '@/store/reviewsSlice';
+import { updateReviewQualityAction } from '@/store/reviews/reviewsActions';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -13,31 +13,24 @@ const MyProjectsPage = () => {
   const dispatch = useAppDispatch();
   const allProjects = useAppSelector(state => state.projects.allProjects);
   const allReviews = useAppSelector(state => state.reviews.allReviews);
+  const userId = useAppSelector(state => state.user.userId);
   
-  const [founderName, setFounderName] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
   const [tempRating, setTempRating] = useState(0);
 
-  useEffect(() => {
-    const storedName = localStorage.getItem('reviewerName');
-    if (storedName) {
-      setFounderName(storedName);
-    }
-  }, []);
-
-  const myProjects = allProjects.filter(p => p.founderName === founderName);
+  const myProjects = allProjects.filter(p => p.founderId === userId);
   const selectedProject = myProjects.find(p => p.id === selectedProjectId);
   
   const projectReviews = selectedProject
-    ? allReviews.filter(r => selectedProject.reviewsReceived.includes(r.id))
+    ? allReviews.filter(r => r.projectId === selectedProject.id)
     : [];
 
   const currentReview: ReviewGiven | null = projectReviews[currentReviewIndex] || null;
 
   const handleRateReview = (rating: number) => {
     if (currentReview) {
-      dispatch(updateReviewQuality({ id: currentReview.id, quality: rating }));
+      dispatch(updateReviewQualityAction({ reviewId: currentReview.id, reviewQuality: rating }));
       setTempRating(rating);
     }
   };
@@ -58,16 +51,16 @@ const MyProjectsPage = () => {
     }
   };
 
-  if (!founderName) {
+  if (!userId) {
     return (
       <div className="container mx-auto px-4 py-16">
         <Card className="p-12 text-center max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold mb-4">Set Your Name First</h2>
+          <h2 className="text-2xl font-bold mb-4">Sign In Required</h2>
           <p className="text-muted-foreground mb-6">
-            Please review a project first to set your name, then you can view your uploaded projects.
+            Please sign in to view your uploaded projects.
           </p>
-          <Link to="/projects">
-            <Button className="gradient-primary text-white">Browse Projects</Button>
+          <Link to="/">
+            <Button className="gradient-primary text-white">Go Home</Button>
           </Link>
         </Card>
       </div>
@@ -190,7 +183,7 @@ const MyProjectsPage = () => {
                     >
                       <div className="flex items-center justify-between pb-4 border-b">
                         <div>
-                          <p className="font-medium">{currentReview.reviewerName}</p>
+                          <p className="font-medium">Reviewer</p>
                           <p className="text-sm text-muted-foreground">
                             {new Date(currentReview.createdAt).toLocaleDateString()}
                           </p>

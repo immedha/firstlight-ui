@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, Link } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { addReview } from '@/store/reviewsSlice';
-import { addReviewToProject } from '@/store/projectsSlice';
+import { submitReviewAction } from '@/store/reviews/reviewsActions';
+import { addReview } from '@/store/reviews/reviewsSlice';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -23,24 +23,26 @@ const ViewProjectPage = () => {
     state.projects.allProjects.find(p => p.id === projectId)
   );
 
-  const existingReviews = useAppSelector(state =>
-    state.reviews.allReviews.filter(r => r.projectId === projectId)
+  const userId = useAppSelector(state => state.user.userId);
+
+  const allReviews = useAppSelector(state => state.reviews.allReviews);
+
+  const existingReviews = useMemo(() => 
+    allReviews.filter(r => r.projectId === projectId),
+    [allReviews, projectId]
   );
 
-  const [reviewerName, setReviewerName] = useState('');
   const [answers, setAnswers] = useState<{ [key: number]: string | string[] }>({});
   const [submitted, setSubmitted] = useState(false);
   const [userHasReviewed, setUserHasReviewed] = useState(false);
 
   useEffect(() => {
-    const storedName = localStorage.getItem('reviewerName');
-    if (storedName) {
-      setReviewerName(storedName);
+    if (userId) {
       // Check if this user already reviewed this project
-      const hasReviewed = existingReviews.some(r => r.reviewerName === storedName);
+      const hasReviewed = existingReviews.some(r => r.reviewerId === userId);
       setUserHasReviewed(hasReviewed);
     }
-  }, [existingReviews]);
+  }, [existingReviews, userId]);
 
   if (!project) {
     return (
@@ -86,8 +88,8 @@ const ViewProjectPage = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!reviewerName.trim()) {
-      toast.error('Please enter your name');
+    if (!userId) {
+      toast.error('You must be signed in to submit a review');
       return;
     }
 
@@ -101,19 +103,11 @@ const ViewProjectPage = () => {
       answer: answers[index]
     }));
 
-    const review = {
-      id: crypto.randomUUID(),
-      reviewerName: reviewerName.trim(),
+    dispatch(submitReviewAction({
       projectId: project.id,
-      filledReviewSchema: filledSchema,
-      createdAt: new Date().toISOString(),
-      reviewQuality: 0
-    };
-
-    dispatch(addReview(review));
-    dispatch(addReviewToProject({ projectId: project.id, reviewId: review.id }));
+      filledReviewSchema: filledSchema
+    }));
     
-    localStorage.setItem('reviewerName', reviewerName.trim());
     setSubmitted(true);
     toast.success('Review submitted successfully!');
   };
@@ -186,7 +180,6 @@ const ViewProjectPage = () => {
           
           <div className="p-8">
             <h1 className="text-4xl font-bold mb-2">{project.name}</h1>
-            <p className="text-muted-foreground mb-4">By {project.founderName}</p>
             <p className="text-lg mb-6">{project.description}</p>
             <a
               href={project.link}
@@ -218,17 +211,6 @@ const ViewProjectPage = () => {
             <h2 className="text-2xl font-bold mb-6">Leave Your Feedback</h2>
             
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <Label htmlFor="reviewerName">Your Name *</Label>
-                <Input
-                  id="reviewerName"
-                  value={reviewerName}
-                  onChange={(e) => setReviewerName(e.target.value)}
-                  placeholder="Enter your name"
-                  required
-                />
-              </div>
-
               {project.reviewSchema.map((schema, index) => (
                 <div key={index} className="space-y-3">
                   <Label className="text-base">
@@ -285,7 +267,7 @@ const ViewProjectPage = () => {
                 type="submit"
                 size="lg"
                 className="w-full gradient-primary text-white"
-                disabled={!allQuestionsAnswered() || !reviewerName.trim()}
+                disabled={!allQuestionsAnswered()}
               >
                 <Send className="w-4 h-4 mr-2" />
                 Submit Review

@@ -1,0 +1,28 @@
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { type Project } from "@/types";
+import { RootState } from "../store";
+
+interface ProjectsSliceState {
+  allProjects: Project[];
+}
+
+const initialState: ProjectsSliceState = {
+  allProjects: [],
+};
+
+const projectsSlice = createSlice({
+  name: "projects",
+  initialState,
+  reducers: {
+    setAllProjects: (state, action: PayloadAction<Project[]>) => {
+      state.allProjects = action.payload;
+    },
+  },
+});
+
+export const { setAllProjects } = projectsSlice.actions;
+
+// Selectors
+export const selectAllProjects = (state: RootState) => state.projects.allProjects;
+
+export default projectsSlice.reducer;

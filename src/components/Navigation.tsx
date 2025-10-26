@@ -1,15 +1,29 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles, Grid3x3, Upload, FolderOpen } from 'lucide-react';
+import { Sparkles, Grid3x3, Upload, FolderOpen, LogIn, LogOut } from 'lucide-react';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { signInAction, logOutAction } from '@/store/user/userActions';
+import { Button } from '@/components/ui/button';
 
 const Navigation = () => {
   const location = useLocation();
+  const dispatch = useAppDispatch();
+  const userId = useAppSelector(state => state.user.userId);
+  const displayName = useAppSelector(state => state.user.displayName);
 
   const navItems = [
     { path: '/projects', label: 'Browse Projects', icon: Grid3x3 },
     { path: '/upload-project', label: 'Upload Project', icon: Upload },
     { path: '/my-projects', label: 'My Projects', icon: FolderOpen },
   ];
+
+  const handleSignIn = () => {
+    dispatch(signInAction());
+  };
+
+  const handleSignOut = () => {
+    dispatch(logOutAction());
+  };
 
   return (
     <motion.nav
@@ -28,7 +42,7 @@ const Navigation = () => {
             </span>
           </Link>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -55,6 +69,21 @@ const Navigation = () => {
                 </Link>
               );
             })}
+            
+            {userId ? (
+              <div className="flex items-center gap-2 ml-2">
+                <span className="text-sm text-muted-foreground hidden md:inline">{displayName}</span>
+                <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden md:inline ml-2">Sign Out</span>
+                </Button>
+              </div>
+            ) : (
+              <Button variant="default" size="sm" onClick={handleSignIn} className="ml-2">
+                <LogIn className="w-4 h-4" />
+                <span className="hidden md:inline ml-2">Sign In</span>
+              </Button>
+            )}
           </div>
         </div>
       </div>

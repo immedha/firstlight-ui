@@ -80,8 +80,7 @@ const ProjectsPage = () => {
                   <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                     {project.description}
                   </p>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>By {project.founderName}</span>
+                  <div className="flex items-center justify-end text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <ExternalLink className="w-3 h-3" />
                       View Details

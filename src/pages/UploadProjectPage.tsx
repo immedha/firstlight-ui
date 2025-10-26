@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch } from '@/store/hooks';
-import { addProject } from '@/store/projectsSlice';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { createProjectAction } from '@/store/user/userActions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,8 +16,8 @@ import { toast } from 'sonner';
 const UploadProjectPage = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const userId = useAppSelector(state => state.user.userId);
   
-  const [founderName, setFounderName] = useState('');
   const [projectName, setProjectName] = useState('');
   const [description, setDescription] = useState('');
   const [link, setLink] = useState('');
@@ -69,8 +69,13 @@ const UploadProjectPage = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!userId) {
+      toast.error('You must be signed in to upload a project');
+      return;
+    }
+
     // Validation
-    if (!founderName.trim() || !projectName.trim() || !description.trim() || !link.trim()) {
+    if (!projectName.trim() || !description.trim() || !link.trim()) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -98,21 +103,13 @@ const UploadProjectPage = () => {
       }
     }
 
-    const project = {
-      id: crypto.randomUUID(),
-      founderId: crypto.randomUUID(),
-      founderName: founderName.trim(),
+    dispatch(createProjectAction({
       name: projectName.trim(),
       description: description.trim(),
       link: link.trim(),
-      imageUrl: imageUrl.trim(),
-      createdAt: new Date().toISOString(),
-      reviewSchema: questions,
-      reviewsReceived: []
-    };
-
-    dispatch(addProject(project));
-    toast.success('Project uploaded successfully!');
+      reviewSchema: questions
+    }));
+    
     navigate('/projects');
   };
 
@@ -130,20 +127,6 @@ const UploadProjectPage = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Founder Info */}
-          <Card className="p-6 space-y-4">
-            <div>
-              <Label htmlFor="founderName">Your Name *</Label>
-              <Input
-                id="founderName"
-                value={founderName}
-                onChange={(e) => setFounderName(e.target.value)}
-                placeholder="John Doe"
-                required
-              />
-            </div>
-          </Card>
-
           {/* Project Details */}
           <Card className="p-6 space-y-4">
             <h2 className="text-xl font-semibold">Project Details</h2>
