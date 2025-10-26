@@ -57,6 +57,7 @@ export const createProjectInDb = async (
     imageUrl?: string;
     images?: ProductImage[];
     status?: 'draft' | 'published';
+    feedbackObjective?: string;
   }
 ): Promise<void> => {
   try {
@@ -101,7 +102,8 @@ export const createProjectInDb = async (
       createdAt: formatDate(),
       reviewSchema: cleanedReviewSchema,
       reviewsReceived: [],
-      status: productData.status || 'draft' // Default to draft
+      status: productData.status || 'draft', // Default to draft
+      feedbackObjective: productData.feedbackObjective || undefined
     };
     
     // Only include images field if it has a value
@@ -140,7 +142,8 @@ export const getAllProjectsFromDb = async (): Promise<Product[]> => {
       createdAt: data.createdAt || "",
       reviewSchema: data.reviewSchema || [],
       reviewsReceived: data.reviewsReceived || [],
-      status: data.status || 'draft'
+      status: data.status || 'draft',
+      feedbackObjective: data.feedbackObjective || undefined
     });
   });
   return projects;
@@ -318,6 +321,8 @@ export const updateProjectInDb = async (
     reviewSchema: ReviewSchema[];
     imageUrl?: string;
     images?: ProductImage[];
+    feedbackObjective?: string;
+    status?: 'draft' | 'published';
   }
 ): Promise<void> => {
   try {
@@ -369,6 +374,16 @@ export const updateProjectInDb = async (
       reviewSchema: cleanedReviewSchema,
       imageUrl: imageUrl
     };
+    
+    // Only include feedbackObjective if it has a value
+    if (productData.feedbackObjective !== undefined) {
+      updateData.feedbackObjective = productData.feedbackObjective.trim() || undefined;
+    }
+    
+    // Include status if provided
+    if (productData.status !== undefined) {
+      updateData.status = productData.status;
+    }
     
     // Only include images field if it has a value
     if (productData.images && productData.images.length > 0) {

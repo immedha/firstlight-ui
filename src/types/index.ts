@@ -25,6 +25,7 @@ export interface Product {
   reviewSchema: ReviewSchema[];
   reviewsReceived: string[];
   status: 'draft' | 'published'; // New field for draft/publish status
+  feedbackObjective?: string; // What feedback the founder is looking for (shown to reviewers)
 }
 
 export interface ReviewGiven {

@@ -259,6 +259,13 @@ const ViewProductPage = () => {
             {userHasReviewed && <CheckCircle2 className="w-5 h-5 text-green-500" />}
           </div>
           
+          {product.feedbackObjective && (
+            <div className="mb-4 p-3 bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-lg">
+              <p className="text-xs font-semibold text-primary mb-1">Feedback Objective</p>
+              <p className="text-sm text-muted-foreground">{product.feedbackObjective}</p>
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-4">
             {product.reviewSchema.map((schema, index) => {
               const userAnswer = userReview 

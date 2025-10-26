@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Upload, Image as ImageIcon, Star, X, Save, Sparkles } from 'lucide-react';
+import { Plus, Trash2, Upload, Image as ImageIcon, Star, X, Save, Sparkles, FileEdit, FolderOpen } from 'lucide-react';
 import { ReviewSchema, ProductImage } from '@/types';
 import { toast } from 'sonner';
 import { uploadMultipleImages, validateImageFile } from '@/lib/storageUtils';
@@ -21,9 +21,9 @@ const UploadProductPage = () => {
   const userId = useAppSelector(state => state.user.userId);
   const { projectId } = useParams<{ projectId: string }>();
   
-  const existingProduct = useAppSelector(state => 
-    state.projects.allProjects.find(p => p.id === projectId && p.founderId === userId)
-  );
+  const allProjects = useAppSelector(state => state.projects.allProjects);
+  const existingProduct = allProjects.find(p => p.id === projectId && p.founderId === userId);
+  const myProducts = allProjects.filter(p => p.founderId === userId);
   
   const [productName, setProductName] = useState('');
   const [description, setDescription] = useState('');
@@ -31,12 +31,7 @@ const UploadProductPage = () => {
   const [imageUrl, setImageUrl] = useState('');
   const [feedbackObjective, setFeedbackObjective] = useState('');
   
-  const defaultQuestions: ReviewSchema[] = [
-    { question: 'What did you think of the overall user experience?', type: 'short-answer' },
-    { question: 'Which features would you use most?', type: 'multiple-choice', choices: ['Messaging', 'Analytics', 'Collaboration Tool'] },
-  ];
-  
-  const [questions, setQuestions] = useState<ReviewSchema[]>(defaultQuestions);
+  const [questions, setQuestions] = useState<ReviewSchema[]>([]);
   const [uploadedImages, setUploadedImages] = useState<ProductImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -48,6 +43,7 @@ const UploadProductPage = () => {
       setLink(existingProduct.link);
       setImageUrl(existingProduct.imageUrl || '');
       setQuestions(existingProduct.reviewSchema);
+      setFeedbackObjective(existingProduct.feedbackObjective || '');
       if (existingProduct.images) setUploadedImages(existingProduct.images);
     } else if (existingProduct && existingProduct.status === 'published') {
       toast.error('Cannot edit published products');
@@ -202,6 +198,7 @@ const UploadProductPage = () => {
       reviewSchema: questions,
       imageUrl: imageUrl.trim(),
       images: uploadedImages.length > 0 ? uploadedImages : undefined,
+      feedbackObjective: feedbackObjective.trim() || undefined,
       status
     };
 
@@ -224,6 +221,46 @@ const UploadProductPage = () => {
             {existingProduct ? 'Update your draft and publish when ready' : 'Share your product and create review questions'}
           </p>
         </div>
+
+        {myProducts.length > 0 && (
+          <Card className="p-4 mb-4">
+            <div className="flex items-center gap-2 mb-3">
+              <FolderOpen className="w-4 h-4 text-muted-foreground" />
+              <h2 className="text-sm font-semibold">Your Products</h2>
+            </div>
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {myProducts.map(product => (
+                <div key={product.id} className="flex items-center justify-between p-2 rounded-md hover:bg-secondary/30 transition-colors">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{product.name}</p>
+                    <p className="text-xs text-muted-foreground">{product.status === 'draft' ? 'Draft' : 'Published'}</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate(`/add-product/${product.id}`)}
+                    className="h-7 text-xs"
+                  >
+                    <FileEdit className="w-3 h-3 mr-1.5" />
+                    Edit
+                  </Button>
+                </div>
+              ))}
+            </div>
+            {!projectId && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/my-products')}
+                className="w-full mt-3 h-8 text-xs"
+              >
+                View All Products
+              </Button>
+            )}
+          </Card>
+        )}
 
         <form className="space-y-4">
           <Card className="p-4 space-y-3">
@@ -282,24 +319,38 @@ const UploadProductPage = () => {
           </Card>
 
           <Card className="p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Review Questions</h2>
-              <div className="flex gap-2">
-                <Button 
-                  type="button" 
-                  onClick={handleGenerateQuestions} 
-                  variant="default" 
-                  size="sm"
-                  disabled={isGenerating || !productName.trim() || !description.trim()}
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  {isGenerating ? 'Generating...' : 'Generate Questions'}
-                </Button>
-                <Button type="button" onClick={addQuestion} variant="outline" size="sm">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Question
-                </Button>
+            <h2 className="text-xl font-semibold">Review Questions</h2>
+            
+            {/* Feedback Objective with Generate Questions Button */}
+            <div className="space-y-2">
+              <div className="flex gap-2 items-start">
+                <div className="flex-1">
+                  <Label htmlFor="feedbackObjective" className="text-xs">What feedback are you looking for? (Optional)</Label>
+                  <Textarea 
+                    id="feedbackObjective" 
+                    value={feedbackObjective} 
+                    onChange={(e) => setFeedbackObjective(e.target.value)} 
+                    placeholder="e.g., I want to understand user satisfaction, feature usage, and pain points" 
+                    rows={2} 
+                    className="text-sm" 
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    This will be shown to reviewers to help them provide targeted feedback
+                  </p>
+                </div>
+                <div className="pt-6">
+                  <Button 
+                    type="button" 
+                    onClick={handleGenerateQuestions} 
+                    variant="default" 
+                    size="sm"
+                    disabled={isGenerating || !productName.trim() || !description.trim()}
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 whitespace-nowrap"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {isGenerating ? 'Generating...' : 'Generate Questions'}
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -309,35 +360,30 @@ const UploadProductPage = () => {
                   💡 Fill in the product name and description above to enable AI question generation.
                 </p>
               </div>
-            ) : (
+            ) : feedbackObjective.trim() ? (
               <div className="p-4 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg">
                 <p className="text-sm text-purple-900 dark:text-purple-200">
-                  ✨ Click "Generate Questions" to let AI create up to 5 tailored survey questions. 
-                  Specify what feedback you're looking for below to get more targeted questions. Questions can be customized after generation.
+                  ✨ Click "Generate Questions" to let AI create up to 5 tailored survey questions based on your feedback objectives. Questions can be customized after generation.
+                </p>
+              </div>
+            ) : (
+              <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <p className="text-sm text-amber-900 dark:text-amber-200">
+                  💡 Define what feedback you're looking for above to get more targeted AI-generated questions. You can also add questions manually.
                 </p>
               </div>
             )}
 
             {questions.length === 0 && (
-              <p className="text-muted-foreground text-sm">
-                Add questions to create your review schema (1 short answer + max 5 choice questions)
-              </p>
+              <div className="text-center py-6 border-2 border-dashed rounded-lg">
+                <p className="text-sm text-muted-foreground mb-2">
+                  No questions yet. Generate questions using AI or add them manually below.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  You can add up to 6 questions (max 5 choice questions)
+                </p>
+              </div>
             )}
-
-            <div>
-              <Label htmlFor="feedbackObjective" className="text-xs">What feedback are you looking for? (Optional)</Label>
-              <Textarea 
-                id="feedbackObjective" 
-                value={feedbackObjective} 
-                onChange={(e) => setFeedbackObjective(e.target.value)} 
-                placeholder="e.g., I want to understand user satisfaction, feature usage, and pain points" 
-                rows={2} 
-                className="text-sm" 
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Describe what kind of feedback you want from reviewers to help AI generate better questions
-              </p>
-            </div>
             {questions.map((question, qIndex) => (
               <motion.div key={qIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-3 border rounded-md space-y-2">
                 <div className="flex items-start gap-2">
@@ -376,6 +422,11 @@ const UploadProductPage = () => {
                 </div>
               </motion.div>
             ))}
+            
+            <Button type="button" onClick={addQuestion} variant="outline" size="sm" className="w-full">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Question
+            </Button>
           </Card>
 
           <div className="flex gap-2">

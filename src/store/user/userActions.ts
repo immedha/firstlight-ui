@@ -11,6 +11,8 @@ export interface createProjectActionPayload {
   reviewSchema: ReviewSchema[];
   imageUrl?: string;
   images?: ProductImage[];
+  feedbackObjective?: string;
+  status?: 'draft' | 'published';
 }
 
 export interface createProjectActionFormat {
