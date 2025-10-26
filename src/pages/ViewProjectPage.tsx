@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ExternalLink, ArrowLeft, Send, CheckCircle2 } from 'lucide-react';
+import { ExternalLink, ArrowLeft, Send, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { FilledReviewSchema, ReviewGiven } from '@/types';
 import { toast } from 'sonner';
 
@@ -33,6 +33,36 @@ const ViewProjectPage = () => {
   const [answers, setAnswers] = useState<{ [key: number]: string | string[] }>({});
   const [userHasReviewed, setUserHasReviewed] = useState(false);
   const [userReview, setUserReview] = useState<ReviewGiven | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Get available images
+  const availableImages = useMemo(() => {
+    if (project?.images && project.images.length > 0) {
+      return project.images;
+    }
+    // Fallback to imageUrl for backward compatibility
+    if (project?.imageUrl) {
+      return [{ url: project.imageUrl, isPrimary: true }];
+    }
+    return [];
+  }, [project]);
+
+  // Reset image index when project or images change
+  useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [project?.id, project?.images]);
+
+  const handleNextImage = () => {
+    if (availableImages.length > 0) {
+      setCurrentImageIndex((prev) => (prev + 1) % availableImages.length);
+    }
+  };
+
+  const handlePrevImage = () => {
+    if (availableImages.length > 0) {
+      setCurrentImageIndex((prev) => (prev - 1 + availableImages.length) % availableImages.length);
+    }
+  };
 
   useEffect(() => {
     if (userId) {
@@ -137,13 +167,54 @@ const ViewProjectPage = () => {
       >
         {/* Project Info */}
         <Card className="overflow-hidden">
-          <div className="aspect-[2/1] max-h-48 bg-gradient-to-br from-primary/20 to-accent/20 relative">
-            {project.imageUrl ? (
-              <img
-                src={project.imageUrl}
-                alt={project.name}
-                className="w-full h-full object-cover"
-              />
+          <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 relative">
+            {availableImages.length > 0 ? (
+              <div className="relative w-full h-full">
+                <img
+                  src={availableImages[currentImageIndex].url}
+                  alt={project.name}
+                  className="w-full h-full object-cover"
+                />
+                
+                {/* Navigation arrows - only show if more than one image */}
+                {availableImages.length > 1 && (
+                  <>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
+                      onClick={handlePrevImage}
+                    >
+                      <ChevronLeft className="w-6 h-6" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
+                      onClick={handleNextImage}
+                    >
+                      <ChevronRight className="w-6 h-6" />
+                    </Button>
+
+                    {/* Image indicators */}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                      {availableImages.map((_, index) => (
+                        <button
+                          key={index}
+                          className={`w-2 h-2 rounded-full transition-all ${
+                            index === currentImageIndex
+                              ? 'bg-white w-8'
+                              : 'bg-white/50'
+                          }`}
+                          onClick={() => setCurrentImageIndex(index)}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <span className="text-4xl font-bold text-primary/30">

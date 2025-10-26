@@ -9,9 +9,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Upload } from 'lucide-react';
-import { ReviewSchema } from '@/types';
+import { Plus, Trash2, Upload, Image as ImageIcon, Star, X } from 'lucide-react';
+import { ReviewSchema, ProjectImage } from '@/types';
 import { toast } from 'sonner';
+import { uploadMultipleImages, validateImageFile } from '@/lib/storageUtils';
 
 const UploadProjectPage = () => {
   const navigate = useNavigate();
@@ -47,6 +48,8 @@ const UploadProjectPage = () => {
   ];
   
   const [questions, setQuestions] = useState<ReviewSchema[]>(defaultQuestions);
+  const [uploadedImages, setUploadedImages] = useState<ProjectImage[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   const addQuestion = () => {
     if (questions.length >= 6) {
@@ -90,6 +93,57 @@ const UploadProjectPage = () => {
     setQuestions(questions.filter((_, i) => i !== index));
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    
+    if (files.length === 0) return;
+
+    // Validate all files first
+    for (const file of files) {
+      const validation = validateImageFile(file);
+      if (!validation.valid) {
+        toast.error(validation.error);
+        return;
+      }
+    }
+
+    setIsUploading(true);
+
+    try {
+      // Upload files to Firebase Storage
+      const urls = await uploadMultipleImages(files, userId!);
+      
+      // Add uploaded images to state
+      const newImages: ProjectImage[] = urls.map((url, index) => ({
+        url,
+        isPrimary: uploadedImages.length === 0 && index === 0 // First image is primary by default
+      }));
+
+      setUploadedImages([...uploadedImages, ...newImages]);
+      toast.success(`${files.length} image(s) uploaded successfully!`);
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      toast.error('Failed to upload images');
+    } finally {
+      setIsUploading(false);
+    }
+
+    // Reset file input
+    e.target.value = '';
+  };
+
+  const removeImage = (index: number) => {
+    setUploadedImages(uploadedImages.filter((_, i) => i !== index));
+  };
+
+  const setPrimaryImage = (index: number) => {
+    const updated = uploadedImages.map((img, i) => ({
+      ...img,
+      isPrimary: i === index
+    }));
+    setUploadedImages(updated);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -131,7 +185,9 @@ const UploadProjectPage = () => {
       name: projectName.trim(),
       description: description.trim(),
       link: link.trim(),
-      reviewSchema: questions
+      reviewSchema: questions,
+      imageUrl: imageUrl.trim(), // Legacy field for backward compatibility
+      images: uploadedImages.length > 0 ? uploadedImages : undefined
     }));
     
     navigate('/projects');
@@ -199,6 +255,76 @@ const UploadProjectPage = () => {
                 onChange={(e) => setImageUrl(e.target.value)}
                 placeholder="https://example.com/image.png"
               />
+            </div>
+
+            {/* Image Upload */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Upload Images (PNG or JPG, max 500KB each)</Label>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg"
+                  multiple
+                  onChange={handleFileChange}
+                  disabled={isUploading}
+                  className="hidden"
+                  id="image-upload"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => document.getElementById('image-upload')?.click()}
+                  disabled={isUploading}
+                >
+                  <ImageIcon className="w-4 h-4 mr-2" />
+                  {isUploading ? 'Uploading...' : 'Upload Images'}
+                </Button>
+              </div>
+
+              {uploadedImages.length > 0 && (
+                <div className="grid grid-cols-2 gap-4">
+                  {uploadedImages.map((img, index) => (
+                    <div key={index} className="relative group">
+                      <div className="aspect-video border-2 rounded-lg overflow-hidden relative"
+                        style={{ borderColor: img.isPrimary ? 'rgb(var(--primary))' : 'transparent' }}>
+                        <img
+                          src={img.url}
+                          alt={`Upload ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setPrimaryImage(index)}
+                            disabled={img.isPrimary}
+                          >
+                            <Star className={`w-4 h-4 mr-1 ${img.isPrimary ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+                            {img.isPrimary ? 'Primary' : 'Set Primary'}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => removeImage(index)}
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            Remove
+                          </Button>
+                        </div>
+                      </div>
+                      {img.isPrimary && (
+                        <div className="absolute top-1 right-1 bg-primary text-primary-foreground px-2 py-1 rounded-md text-xs flex items-center gap-1">
+                          <Star className="w-3 h-3 fill-current" />
+                          Primary
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </Card>
 
