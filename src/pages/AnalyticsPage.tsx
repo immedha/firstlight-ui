@@ -5,6 +5,8 @@ import { Card } from '@/components/ui/card';
 import { Trophy, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { KARMA_CONFIG } from '@/lib/karmaConfig';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 
 const AnalyticsPage = () => {
   const userId = useAppSelector(state => state.user.userId);
@@ -78,54 +80,46 @@ const AnalyticsPage = () => {
             </div>
 
             <Card className="p-4">
-              <div className="h-64 sm:h-80 relative">
+              <div className="h-64 sm:h-80">
                 {karmaTimeline.length > 1 ? (
-                  <svg className="w-full h-full" viewBox="0 0 400 320" preserveAspectRatio="none">
-                    {/* Y-axis labels */}
-                    <text x="20" y="20" fontSize="12" fill="currentColor" className="text-muted-foreground">
-                      {maxKarma}
-                    </text>
-                    <text x="20" y="160" fontSize="12" fill="currentColor" className="text-muted-foreground">
-                      {Math.round((maxKarma + minKarma) / 2)}
-                    </text>
-                    <text x="20" y="300" fontSize="12" fill="currentColor" className="text-muted-foreground">
-                      {minKarma}
-                    </text>
-
-                    {/* Grid lines */}
-                    <line x1="40" y1="20" x2="40" y2="300" stroke="currentColor" strokeWidth="1" opacity="0.2" />
-                    <line x1="40" y1="160" x2="400" y2="160" stroke="currentColor" strokeWidth="1" opacity="0.2" />
-
-                    {/* Karma line */}
-                    <polyline
-                      points={karmaTimeline.map((point, i) => {
-                        const x = 40 + (i / (karmaTimeline.length - 1)) * 360;
-                        const y = 20 + ((maxKarma - point.karma) / (maxKarma - minKarma)) * 280;
-                        return `${x},${y}`;
-                      }).join(' ')}
-                      fill="none"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                    />
-
-                    {/* Data points */}
-                    {karmaTimeline.map((point, i) => {
-                      const x = 40 + (i / (karmaTimeline.length - 1)) * 360;
-                      const y = 20 + ((maxKarma - point.karma) / (maxKarma - minKarma)) * 280;
-                      return (
-                        <circle
-                          key={i}
-                          cx={x}
-                          cy={y}
-                          r="5"
-                          fill="hsl(var(--primary))"
-                          stroke="hsl(var(--background))"
-                          strokeWidth="2"
-                        />
-                      );
-                    })}
-                  </svg>
+                  <ChartContainer
+                    config={{
+                      karma: {
+                        label: 'Karma Points',
+                        color: 'hsl(var(--primary))',
+                      },
+                    }}
+                    className="h-full w-full"
+                  >
+                    <LineChart data={karmaTimeline}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis 
+                        dataKey="date"
+                        tickFormatter={(value) => {
+                          const date = new Date(value);
+                          return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        }}
+                        className="text-xs"
+                      />
+                      <YAxis 
+                        className="text-xs"
+                      />
+                      <ChartTooltip 
+                        content={<ChartTooltipContent />}
+                        labelFormatter={(value) => {
+                          const date = new Date(value);
+                          return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+                        }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="karma" 
+                        stroke="hsl(var(--primary))" 
+                        strokeWidth={3}
+                        dot={{ fill: 'hsl(var(--primary))', r: 5, strokeWidth: 2, stroke: 'hsl(var(--background))' }}
+                      />
+                    </LineChart>
+                  </ChartContainer>
                 ) : (
                   <div className="flex items-center justify-center h-full text-center text-muted-foreground">
                     <div>

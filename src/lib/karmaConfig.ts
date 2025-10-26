@@ -12,14 +12,14 @@ export const KARMA_CONFIG = {
   STARTING_KARMA: 50,
   
   // Tier thresholds
-  TIER_1_THRESHOLD: 100,  // Great
+  TIER_1_THRESHOLD: 75,  // Great
   TIER_2_THRESHOLD: 40,   // Mid
   
   // Karma rewards based on review quality ratings
   REWARDS: {
     EXCELLENT: 10,    // 4-5 stars (Great feedback)
-    NEUTRAL: 1,       // 3 stars (Neutral - just participating)
-    POOR: -3,         // 1-2 stars (Bad feedback)
+    NEUTRAL: 5,       // 3 stars (Neutral - just participating)
+    POOR: -10,         // 1-2 stars (Bad feedback)
   },
   
   // Get user's tier based on karma points
