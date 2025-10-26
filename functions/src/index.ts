@@ -82,12 +82,12 @@ export const generateSurveyQuestions = onCall({ secrets: [openaiApiKey], },
       let result: any = completion.choices[0].message.parsed;
       if (!result) {
         logger.error("No result returned from OpenAI");
-        return { questions: [] };
+        return { questions: [], message: "No result returned from OpenAI" };
       }
       return { questions: result.questions };
   } catch (error) {
     logger.error("Error generating survey questions", error);
-    return { questions: [] };
+    return { questions: [], message: "Error generating survey questions: " + error };
   }
 }
 );
