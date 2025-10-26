@@ -30,6 +30,7 @@ setGlobalOptions({ maxInstances: 10 });
 interface GenerateQuestionsRequest {
   productName: string;
   description: string;
+  feedbackObjective?: string;
 }
 
 interface QuestionSchema {
@@ -47,7 +48,7 @@ export const generateSurveyQuestions = onCall(
   },
   async (request) => {
     try {
-      const {productName, description} = request.data as GenerateQuestionsRequest;
+      const {productName, description, feedbackObjective} = request.data as GenerateQuestionsRequest;
 
       if (!productName || !description) {
         throw new Error("Product name and description are required");
@@ -56,7 +57,7 @@ export const generateSurveyQuestions = onCall(
       // Check if OpenAI API key is configured
       if (!openaiApiKey.value()) {
         logger.warn("OpenAI API key not configured, returning fallback questions");
-        return {questions: getFallbackQuestions(productName, description)};
+        return {questions: getFallbackQuestions(productName, description, feedbackObjective)};
       }
 
       // Initialize OpenAI
@@ -64,14 +65,18 @@ export const generateSurveyQuestions = onCall(
         apiKey: openaiApiKey.value(),
       });
 
-    const prompt = `Generate up to 5 survey questions for a product called "${productName}" with the following description and feedback goals: "${description}"
+    const feedbackContext = feedbackObjective ? `Feedback objectives: ${feedbackObjective}` : '';
+    
+    const prompt = `Generate up to 5 survey questions for a product called "${productName}" with the following description: "${description}"
+${feedbackContext}
 
 Requirements:
 1. Generate up to 5 questions (mix of short-answer and choice questions)
 2. For choice questions, use a 5-point Likert scale: "Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree" OR provide contextually appropriate multiple choice options
 3. At least 2 questions should be choice-based for easy quantitative analysis
-4. Questions should be specific, actionable, and related to user experience, feature value, or product satisfaction
+4. Questions should be specific, actionable, and related to the product description and feedback objectives
 5. Generate diverse questions covering different aspects (usability, value, design, features, etc.)
+${feedbackObjective ? '6. Tailor questions to specifically address the feedback objectives mentioned above' : ''}
 
 Return the response as a JSON array with this exact format:
 [
@@ -142,13 +147,13 @@ Example output format:
     } else {
       // Fallback if parsing fails
       logger.warn("Failed to parse AI response, returning fallback questions");
-      return {questions: getFallbackQuestions(productName, description)};
+      return {questions: getFallbackQuestions(productName, description, feedbackObjective)};
     }
   } catch (error) {
     logger.error("Error generating survey questions", error);
     // Return fallback questions on error
-    const {productName, description} = request.data as GenerateQuestionsRequest;
-    return {questions: getFallbackQuestions(productName, description)};
+    const {productName, description, feedbackObjective} = request.data as GenerateQuestionsRequest;
+    return {questions: getFallbackQuestions(productName, description, feedbackObjective)};
   }
 }
 );
@@ -156,7 +161,7 @@ Example output format:
 /**
  * Fallback questions when AI is not available or fails
  */
-function getFallbackQuestions(productName: string, description: string): QuestionSchema[] {
+function getFallbackQuestions(productName: string, description: string, feedbackObjective?: string): QuestionSchema[] {
   const questions: QuestionSchema[] = [
     {
       question: `How would you rate your overall experience with ${productName}?`,
@@ -183,9 +188,9 @@ function getFallbackQuestions(productName: string, description: string): Questio
     },
   ];
 
-  // Customize based on description keywords
-  const lowerDescription = description.toLowerCase();
-  if (lowerDescription.includes("design") || lowerDescription.includes("ui") || lowerDescription.includes("interface")) {
+  // Customize based on description and feedback objective keywords
+  const combinedText = `${description} ${feedbackObjective || ''}`.toLowerCase();
+  if (combinedText.includes("design") || combinedText.includes("ui") || combinedText.includes("interface")) {
     questions[1] = {
       question: "How would you rate the visual design and user interface?",
       type: "single-choice",

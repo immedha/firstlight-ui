@@ -29,6 +29,7 @@ const UploadProductPage = () => {
   const [description, setDescription] = useState('');
   const [link, setLink] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [feedbackObjective, setFeedbackObjective] = useState('');
   
   const defaultQuestions: ReviewSchema[] = [
     { question: 'What did you think of the overall user experience?', type: 'short-answer' },
@@ -144,7 +145,7 @@ const UploadProductPage = () => {
     try {
       toast.info('Generating survey questions...');
       
-      const generatedQuestions = await generateSurveyQuestions(productName, description);
+      const generatedQuestions = await generateSurveyQuestions(productName, description, feedbackObjective);
       
       setQuestions(generatedQuestions);
       toast.success(`Generated ${generatedQuestions.length} survey questions!`);
@@ -154,7 +155,7 @@ const UploadProductPage = () => {
       
       // Try fallback method on error
       try {
-        const fallbackQuestions = generateSurveyQuestionsFallback(productName, description);
+        const fallbackQuestions = generateSurveyQuestionsFallback(productName, description, feedbackObjective);
         setQuestions(fallbackQuestions);
         toast.info('Using fallback questions');
       } catch (fallbackError) {
@@ -311,8 +312,8 @@ const UploadProductPage = () => {
             ) : (
               <div className="p-4 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg">
                 <p className="text-sm text-purple-900 dark:text-purple-200">
-                  ✨ Click "Generate Questions" to let AI create up to 5 tailored survey questions based on your product description. 
-                  Questions can be customized after generation.
+                  ✨ Click "Generate Questions" to let AI create up to 5 tailored survey questions. 
+                  Specify what feedback you're looking for below to get more targeted questions. Questions can be customized after generation.
                 </p>
               </div>
             )}
@@ -322,6 +323,21 @@ const UploadProductPage = () => {
                 Add questions to create your review schema (1 short answer + max 5 choice questions)
               </p>
             )}
+
+            <div>
+              <Label htmlFor="feedbackObjective" className="text-xs">What feedback are you looking for? (Optional)</Label>
+              <Textarea 
+                id="feedbackObjective" 
+                value={feedbackObjective} 
+                onChange={(e) => setFeedbackObjective(e.target.value)} 
+                placeholder="e.g., I want to understand user satisfaction, feature usage, and pain points" 
+                rows={2} 
+                className="text-sm" 
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Describe what kind of feedback you want from reviewers to help AI generate better questions
+              </p>
+            </div>
             {questions.map((question, qIndex) => (
               <motion.div key={qIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-3 border rounded-md space-y-2">
                 <div className="flex items-start gap-2">

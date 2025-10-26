@@ -5,22 +5,25 @@ import { httpsCallable } from 'firebase/functions';
 /**
  * Generate survey questions using Firebase Function (server-side AI)
  * @param productName - Name of the product
- * @param description - Description of the product and feedback goals
+ * @param description - Description of the product
+ * @param feedbackObjective - What kind of feedback the user is looking for (optional)
  * @returns Array of up to 5 survey questions
  */
 export async function generateSurveyQuestions(
   productName: string,
-  description: string
+  description: string,
+  feedbackObjective?: string
 ): Promise<ReviewSchema[]> {
   try {
-    const generateQuestions = httpsCallable<{ productName: string; description: string }, { questions: ReviewSchema[] }>(
+    const generateQuestions = httpsCallable<{ productName: string; description: string; feedbackObjective?: string }, { questions: ReviewSchema[] }>(
       functions,
       'generateSurveyQuestions'
     );
 
     const result = await generateQuestions({
       productName,
-      description
+      description,
+      feedbackObjective
     });
 
     return result.data.questions;
@@ -28,7 +31,7 @@ export async function generateSurveyQuestions(
     console.error('Error generating survey questions:', error);
     
     // Fallback: Return sensible default questions if Firebase function fails
-    return generateSurveyQuestionsFallback(productName, description);
+    return generateSurveyQuestionsFallback(productName, description, feedbackObjective);
   }
 }
 
@@ -38,10 +41,11 @@ export async function generateSurveyQuestions(
  */
 export function generateSurveyQuestionsFallback(
   productName: string,
-  description: string
+  description: string,
+  feedbackObjective?: string
 ): ReviewSchema[] {
-  // Extract key topics from description
-  const keywords = extractKeywords(description);
+  // Extract key topics from description and feedback objective
+  const keywords = extractKeywords(description + ' ' + (feedbackObjective || ''));
   
   const questionTemplates: ReviewSchema[] = [
     {
