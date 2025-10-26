@@ -3,23 +3,24 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Users, Sparkles, Target, MessageCircle, Zap } from 'lucide-react';
 import { InteractiveBackground } from '@/components/InteractiveBackground';
+import Leaderboard from '@/components/Leaderboard';
 
 const LandingPage = () => {
   const features = [
     {
       icon: Users,
-      title: 'Peer Feedback',
-      description: 'Connect with founders and exchange valuable insights'
+      title: 'Review for Reviews',
+      description: 'Give helpful feedback to others and earn karma that boosts your project visibility'
     },
     {
       icon: MessageCircle,
-      title: 'Custom Questions',
-      description: 'Design review schemas for exact feedback needs'
+      title: 'Custom Feedback Forms',
+      description: 'Design exactly what feedback you need with custom questions tailored to your MVP'
     },
     {
       icon: Target,
-      title: 'Quality Ratings',
-      description: 'Rate reviews to gamify and maintain standards'
+      title: 'Quality-Based Visibility',
+      description: 'High-quality reviewers get matched with high-quality founders - good karma in, good karma out'
     }
   ];
 
@@ -44,17 +45,23 @@ const LandingPage = () => {
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary mb-4 text-xs sm:text-sm"
             >
               <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="font-medium">Feedback Exchange for Founders</span>
+              <span className="font-medium">Peer-to-Peer Feedback Network</span>
             </motion.div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
-              Get your first users
-              <span className="block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-              And find product-market fit
-              </span>
-            </h1>
+            <div className="relative mb-4 max-w-3xl mx-auto">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-center">
+                Get your first users
+                <span className="block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                Find product-market fit
+                </span>
+              </h1>
+              
+              <div className="hidden lg:block absolute -right-64 top-0">
+                <Leaderboard />
+              </div>
+            </div>
 
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-6 max-w-2xl mx-auto text-center">
             Where early products meet early users — and everyone wins through shared feedback and growth.
             </p>
 
@@ -85,9 +92,9 @@ const LandingPage = () => {
             transition={{ duration: 0.5 }}
             className="text-center mb-8"
           >
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3">Why First User?</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3">How It Works</h2>
             <p className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto">
-              A simple platform built for founders to help each other succeed
+              A karma-based feedback exchange where quality feedback leads to quality users for your product
             </p>
           </motion.div>
 
@@ -151,10 +158,10 @@ const LandingPage = () => {
                 <Zap className="w-10 h-10 mx-auto mb-4 text-primary" style={{ filter: 'drop-shadow(0 0 20px hsl(var(--primary) / 0.6))' }} />
               </motion.div>
               <h2 className="text-2xl sm:text-3xl font-bold mb-3 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                Ready to improve your product?
+                Ready to get your first users?
               </h2>
               <p className="text-muted-foreground text-sm sm:text-base mb-6">
-                Join the community of founders helping each other build better products
+                Start by giving thoughtful feedback to other founders. The better you review, the more visibility your own project will receive.
               </p>
               <Link to="/products">
                 <Button size="lg" className="gradient-primary text-white h-10 text-sm group">
