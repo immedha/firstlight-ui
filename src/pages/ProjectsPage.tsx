@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAppSelector } from '@/store/hooks';
@@ -11,48 +11,74 @@ import { KARMA_CONFIG } from '@/lib/karmaConfig';
 
 const ProjectsPage = () => {
   const allProjects = useAppSelector(state => state.projects.allProjects);
-  const projects = allProjects.filter(p => p.status === 'published');
   const userId = useAppSelector(state => state.user.userId);
   const userKarma = useAppSelector(state => state.user.karmaPoints);
-  const [filteredProjects, setFilteredProjects] = useState<typeof projects>([]);
+  
+  // Memoize filtered projects to prevent infinite loop
+  const projects = useMemo(
+    () => allProjects.filter(p => p.status === 'published'),
+    [allProjects]
+  );
+  
+  const [sortedProjects, setSortedProjects] = useState<typeof projects>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const filterProjectsByTier = async () => {
+    const sortProjectsByTier = async () => {
       if (!userId) {
-        // Not logged in - show all projects
-        setFilteredProjects(projects);
+        // Not logged in - show all projects as-is
+        setSortedProjects(projects);
         setLoading(false);
         return;
       }
 
-      // User is logged in - filter by tier
+      // User is logged in - sort by tier (same tier first)
       const userTier = KARMA_CONFIG.getTier(userKarma);
-      const filtered: typeof projects = [];
-
-      for (const project of projects) {
-        try {
-          const founderRef = doc(db, 'users', project.founderId);
-          const founderDoc = await getDoc(founderRef);
-          
-          if (founderDoc.exists()) {
-            const founderKarma = founderDoc.data().karmaPoints || 0;
-            const founderTier = KARMA_CONFIG.getTier(founderKarma);
+      
+      // Fetch founder tiers for all projects
+      const projectsWithTier = await Promise.all(
+        projects.map(async (project) => {
+          try {
+            const founderRef = doc(db, 'users', project.founderId);
+            const founderDoc = await getDoc(founderRef);
             
-            if (founderTier === userTier) {
-              filtered.push(project);
+            let founderTier = 3; // Default to tier 3 if fetch fails
+            if (founderDoc.exists()) {
+              const founderKarma = founderDoc.data().karmaPoints || 0;
+              founderTier = KARMA_CONFIG.getTier(founderKarma);
             }
+            
+            return {
+              project,
+              tier: founderTier,
+              isSameTier: founderTier === userTier
+            };
+          } catch (error) {
+            console.error('Error checking founder tier:', error);
+            return {
+              project,
+              tier: 3,
+              isSameTier: false
+            };
           }
-        } catch (error) {
-          console.error('Error checking founder tier:', error);
-        }
-      }
+        })
+      );
 
-      setFilteredProjects(filtered);
+      // Sort: same tier first, then others
+      const sorted = projectsWithTier
+        .sort((a, b) => {
+          if (a.isSameTier === b.isSameTier) {
+            return 0; // Maintain original order within same tier
+          }
+          return a.isSameTier ? -1 : 1; // Same tier goes first
+        })
+        .map(item => item.project);
+
+      setSortedProjects(sorted);
       setLoading(false);
     };
 
-    filterProjectsByTier();
+    sortProjectsByTier();
   }, [projects, userId, userKarma]);
 
   if (loading) {
@@ -65,7 +91,7 @@ const ProjectsPage = () => {
     );
   }
 
-  if (filteredProjects.length === 0) {
+  if (sortedProjects.length === 0) {
     return (
       <div className="container mx-auto px-4 py-16">
         <motion.div
@@ -104,7 +130,7 @@ const ProjectsPage = () => {
       </motion.div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredProjects.map((project, index) => (
+        {sortedProjects.map((project, index) => (
           <motion.div
             key={project.id}
             initial={{ opacity: 0, y: 20 }}
