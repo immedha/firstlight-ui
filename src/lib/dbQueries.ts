@@ -3,6 +3,7 @@ import { db } from "../firebase";
 import { formatDate } from "./utils";
 import { v4 as uuidv4 } from 'uuid';
 import { FilledReviewSchema, Project, ReviewGiven, ReviewSchema } from "@/types";
+import { KARMA_CONFIG } from "./karmaConfig";
 
 export interface ProjectDatabaseData {
   founderId: string;
@@ -28,13 +29,13 @@ export const initializeUserInDb = async (email: string, userId: string, displayN
       console.log("User document does not exist, creating new user");
     }
         
-    const userData = {
+      const userData = {
       email,
       displayName,
       uploadedProjects: [],
       reviewsGiven: [],
       createdAt: formatDate(),
-      karmaPoints: 0,
+      karmaPoints: KARMA_CONFIG.STARTING_KARMA,
     };
     await setDoc(userRef, userData);
     
@@ -208,14 +209,44 @@ export const updateReviewQualityInDb = async (
   try {
     // Update the review document directly
     const reviewRef = doc(db, "reviews", reviewId);
+    const reviewDoc = await getDoc(reviewRef);
+    if (!reviewDoc.exists()) {
+      throw new Error("Review not found");
+    }
+    
+    const reviewData = reviewDoc.data();
+    const previousRating = reviewData.reviewQuality || 0;
+    
+    // Update the review
     await updateDoc(reviewRef, {
       reviewQuality: reviewQuality
     });
     
-    // Get the updated review to return
-    const reviewDoc = await getDoc(reviewRef);
-    if (!reviewDoc.exists()) {
-      throw new Error("Review not found");
+    // Update karma for the reviewer
+    const reviewerId = reviewData.reviewerId;
+    if (reviewerId) {
+      // Get reviewer's current karma
+      const reviewerRef = doc(db, "users", reviewerId);
+      const reviewerDoc = await getDoc(reviewerRef);
+      
+      if (reviewerDoc.exists()) {
+        const reviewerData = reviewerDoc.data();
+        let currentKarma = reviewerData.karmaPoints || 0;
+        
+        // Remove karma from previous rating (if it existed)
+        if (previousRating >= 4) currentKarma -= KARMA_CONFIG.REWARDS.EXCELLENT;
+        else if (previousRating === 3) currentKarma -= KARMA_CONFIG.REWARDS.NEUTRAL;
+        else if (previousRating <= 2 && previousRating > 0) currentKarma += Math.abs(KARMA_CONFIG.REWARDS.POOR);
+        
+        // Add karma for new rating
+        const karmaChange = KARMA_CONFIG.getKarmaChange(reviewQuality);
+        currentKarma += karmaChange;
+        
+        // Update karma
+        await updateDoc(reviewerRef, {
+          karmaPoints: currentKarma
+        });
+      }
     }
     
     const data = reviewDoc.data();
@@ -225,7 +256,7 @@ export const updateReviewQualityInDb = async (
       projectId: data.projectId || "",
       filledReviewSchema: data.filledReviewSchema || [],
       createdAt: data.createdAt || "",
-      reviewQuality: data.reviewQuality || 0
+      reviewQuality: reviewQuality
     };
     
     return updatedReview;

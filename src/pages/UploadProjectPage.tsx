@@ -22,7 +22,31 @@ const UploadProjectPage = () => {
   const [description, setDescription] = useState('');
   const [link, setLink] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [questions, setQuestions] = useState<ReviewSchema[]>([]);
+  
+  // Default review schema for web app MVPs
+  const defaultQuestions: ReviewSchema[] = [
+    {
+      question: 'What did you think of the overall user experience?',
+      type: 'short-answer'
+    },
+    {
+      question: 'Which features would you use most?',
+      type: 'multiple-choice',
+      choices: ['Messaging', 'Analytics', 'Collaboration Tool']
+    },
+    {
+      question: 'What would you improve first?',
+      type: 'single-choice',
+      choices: ['Design', 'Performance/Speed', 'Feature completeness']
+    },
+    {
+      question: 'Would you recommend this to a friend?',
+      type: 'single-choice',
+      choices: ['Yes', 'No']
+    }
+  ];
+  
+  const [questions, setQuestions] = useState<ReviewSchema[]>(defaultQuestions);
 
   const addQuestion = () => {
     if (questions.length >= 6) {

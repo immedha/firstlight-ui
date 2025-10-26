@@ -12,10 +12,10 @@ function* listenToAllProjects() {
   const q = query(projectsRef, orderBy("createdAt", "desc"));
   
   onSnapshot(q, (querySnapshot) => {
-    const projects: Project[] = [];
+    const allProjects: Project[] = [];
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      projects.push({
+      allProjects.push({
         id: doc.id,
         founderId: data.founderId || "",
         name: data.name || "",
@@ -28,8 +28,9 @@ function* listenToAllProjects() {
       });
     });
     
-    // Dispatch the updated projects list
-    store.dispatch(setAllProjects(projects));
+    // TODO: Add tier-based filtering here later
+    // For now, show all projects to everyone
+    store.dispatch(setAllProjects(allProjects));
   });
 }
 

@@ -45,6 +45,10 @@ function* updateReviewQuality(action: updateReviewQualityActionFormat) {
   try {
     const updatedReview: ReviewGiven = yield call(updateReviewQualityInDb, action.payload.reviewId, action.payload.reviewQuality);
     yield put(updateReview(updatedReview));
+    
+    // The karma update is handled in updateReviewQualityInDb, so user data will auto-update
+    // via the listenToUserUpdates listener when the user document changes in Firestore
+    
     yield put(setPageStateInfoAction({ type: 'success', message: 'Review quality updated successfully!' }));
   } catch (error: any) {
     console.error(error);

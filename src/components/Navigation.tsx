@@ -11,11 +11,18 @@ const Navigation = () => {
   const userId = useAppSelector(state => state.user.userId);
   const displayName = useAppSelector(state => state.user.displayName);
 
-  const navItems = [
+  // Base nav items that everyone sees
+  const baseNavItems = [
     { path: '/projects', label: 'Browse Projects', icon: Grid3x3 },
+  ];
+
+  // Auth-only nav items
+  const authNavItems = userId ? [
     { path: '/upload-project', label: 'Upload Project', icon: Upload },
     { path: '/my-projects', label: 'My Projects', icon: FolderOpen },
-  ];
+  ] : [];
+
+  const navItems = [...baseNavItems, ...authNavItems];
 
   const handleSignIn = () => {
     dispatch(signInAction());

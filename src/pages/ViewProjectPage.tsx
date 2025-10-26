@@ -3,16 +3,14 @@ import { motion } from 'framer-motion';
 import { useParams, Link } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { submitReviewAction } from '@/store/reviews/reviewsActions';
-import { addReview } from '@/store/reviews/reviewsSlice';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ExternalLink, ArrowLeft, Send, CheckCircle2 } from 'lucide-react';
-import { FilledReviewSchema } from '@/types';
+import { FilledReviewSchema, ReviewGiven } from '@/types';
 import { toast } from 'sonner';
 
 const ViewProjectPage = () => {
@@ -33,14 +31,26 @@ const ViewProjectPage = () => {
   );
 
   const [answers, setAnswers] = useState<{ [key: number]: string | string[] }>({});
-  const [submitted, setSubmitted] = useState(false);
   const [userHasReviewed, setUserHasReviewed] = useState(false);
+  const [userReview, setUserReview] = useState<ReviewGiven | null>(null);
 
   useEffect(() => {
     if (userId) {
       // Check if this user already reviewed this project
-      const hasReviewed = existingReviews.some(r => r.reviewerId === userId);
-      setUserHasReviewed(hasReviewed);
+      const review = existingReviews.find(r => r.reviewerId === userId);
+      if (review) {
+        setUserHasReviewed(true);
+        setUserReview(review);
+        // Pre-fill answers with the existing review
+        const filledAnswers: { [key: number]: string | string[] } = {};
+        review.filledReviewSchema.forEach((schema, index) => {
+          filledAnswers[index] = schema.answer;
+        });
+        setAnswers(filledAnswers);
+      } else {
+        setUserHasReviewed(false);
+        setUserReview(null);
+      }
     }
   }, [existingReviews, userId]);
 
@@ -108,43 +118,8 @@ const ViewProjectPage = () => {
       filledReviewSchema: filledSchema
     }));
     
-    setSubmitted(true);
     toast.success('Review submitted successfully!');
   };
-
-  if (submitted) {
-    return (
-      <div className="container mx-auto px-4 py-16">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-        >
-          <Card className="p-12 text-center max-w-2xl mx-auto">
-            <div className="w-16 h-16 rounded-full gradient-primary flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 className="w-8 h-8 text-white" />
-            </div>
-            <h2 className="text-3xl font-bold mb-4">Thank You!</h2>
-            <p className="text-muted-foreground mb-8">
-              Your feedback has been submitted successfully. The founder will really appreciate your insights!
-            </p>
-            <div className="flex gap-4 justify-center">
-              <Link to="/projects">
-                <Button variant="outline">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Projects
-                </Button>
-              </Link>
-              <Link to="/upload-project">
-                <Button className="gradient-primary text-white">
-                  Upload Your Project
-                </Button>
-              </Link>
-            </div>
-          </Card>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto px-4 py-16 max-w-4xl">
@@ -158,11 +133,11 @@ const ViewProjectPage = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-8"
+        className="space-y-4"
       >
         {/* Project Info */}
         <Card className="overflow-hidden">
-          <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 relative">
+          <div className="aspect-[2/1] max-h-48 bg-gradient-to-br from-primary/20 to-accent/20 relative">
             {project.imageUrl ? (
               <img
                 src={project.imageUrl}
@@ -171,21 +146,21 @@ const ViewProjectPage = () => {
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <span className="text-6xl font-bold text-primary/30">
+                <span className="text-4xl font-bold text-primary/30">
                   {project.name.charAt(0)}
                 </span>
               </div>
             )}
           </div>
           
-          <div className="p-8">
-            <h1 className="text-4xl font-bold mb-2">{project.name}</h1>
-            <p className="text-lg mb-6">{project.description}</p>
+          <div className="p-4">
+            <h1 className="text-2xl font-bold mb-2">{project.name}</h1>
+            <p className="text-sm mb-3 line-clamp-2">{project.description}</p>
             <a
               href={project.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-primary hover:underline"
+              className="inline-flex items-center gap-2 text-primary hover:underline text-sm"
             >
               Visit Project Website
               <ExternalLink className="w-4 h-4" />
@@ -194,75 +169,75 @@ const ViewProjectPage = () => {
         </Card>
 
         {/* Review Form */}
-        {userHasReviewed ? (
-          <Card className="p-8 text-center">
-            <h2 className="text-2xl font-bold mb-4">You've Already Reviewed This Project</h2>
-            <p className="text-muted-foreground mb-6">
-              Thank you for your feedback! Each user can only submit one review per project.
-            </p>
-            <Link to="/projects">
-              <Button variant="outline">
-                Browse Other Projects
-              </Button>
-            </Link>
-          </Card>
-        ) : (
-          <Card className="p-8">
-            <h2 className="text-2xl font-bold mb-6">Leave Your Feedback</h2>
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {project.reviewSchema.map((schema, index) => (
-                <div key={index} className="space-y-3">
-                  <Label className="text-base">
-                    {index + 1}. {schema.question} *
-                  </Label>
+        <Card className="p-8">
+          <h2 className="text-2xl font-bold mb-6">
+            {userHasReviewed ? 'Your Review' : 'Leave Your Feedback'}
+          </h2>
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {project.reviewSchema.map((schema, index) => {
+              const userAnswer = userReview 
+                ? userReview.filledReviewSchema.find(s => s.question === schema.question)?.answer
+                : answers[index];
+              
+              return (
+              <div key={index} className="space-y-3">
+                <Label className="text-base">
+                  {index + 1}. {schema.question} *
+                </Label>
 
-                  {schema.type === 'short-answer' && (
-                    <Textarea
-                      value={(answers[index] as string) || ''}
-                      onChange={(e) => handleAnswerChange(index, e.target.value)}
-                      placeholder="Type your answer here..."
-                      rows={4}
-                    />
-                  )}
+                {schema.type === 'short-answer' && (
+                  <Textarea
+                    value={(userAnswer as string) || ''}
+                    onChange={(e) => !userHasReviewed && handleAnswerChange(index, e.target.value)}
+                    placeholder="Type your answer here..."
+                    rows={4}
+                    disabled={userHasReviewed}
+                    className={userHasReviewed ? 'bg-secondary/30' : ''}
+                  />
+                )}
 
-                  {schema.type === 'single-choice' && (
-                    <RadioGroup
-                      value={(answers[index] as string) || ''}
-                      onValueChange={(value) => handleAnswerChange(index, value)}
-                    >
-                      {schema.choices?.map((choice, cIndex) => (
-                        <div key={cIndex} className="flex items-center space-x-2">
-                          <RadioGroupItem value={choice} id={`q${index}-c${cIndex}`} />
-                          <Label htmlFor={`q${index}-c${cIndex}`} className="font-normal cursor-pointer">
-                            {choice}
-                          </Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
-                  )}
+                {schema.type === 'single-choice' && (
+                  <RadioGroup
+                    value={(userAnswer as string) || ''}
+                    onValueChange={(value) => !userHasReviewed && handleAnswerChange(index, value)}
+                    disabled={userHasReviewed}
+                  >
+                    {schema.choices?.map((choice, cIndex) => (
+                      <div key={cIndex} className="flex items-center space-x-2">
+                        <RadioGroupItem value={choice} id={`q${index}-c${cIndex}`} disabled={userHasReviewed} />
+                        <Label htmlFor={`q${index}-c${cIndex}`} className={`font-normal ${userHasReviewed ? '' : 'cursor-pointer'}`}>
+                          {choice}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                )}
 
-                  {schema.type === 'multiple-choice' && (
-                    <div className="space-y-2">
-                      {schema.choices?.map((choice, cIndex) => (
-                        <div key={cIndex} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`q${index}-c${cIndex}`}
-                            checked={((answers[index] as string[]) || []).includes(choice)}
-                            onCheckedChange={(checked) => 
-                              handleCheckboxChange(index, choice, checked as boolean)
-                            }
-                          />
-                          <Label htmlFor={`q${index}-c${cIndex}`} className="font-normal cursor-pointer">
-                            {choice}
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
+                {schema.type === 'multiple-choice' && (
+                  <div className="space-y-2">
+                    {schema.choices?.map((choice, cIndex) => (
+                      <div key={cIndex} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`q${index}-c${cIndex}`}
+                          checked={Array.isArray(userAnswer) ? userAnswer.includes(choice) : false}
+                          onCheckedChange={(checked) => 
+                            !userHasReviewed && handleCheckboxChange(index, choice, checked as boolean)
+                          }
+                          disabled={userHasReviewed}
+                        />
+                        <Label htmlFor={`q${index}-c${cIndex}`} className={`font-normal ${userHasReviewed ? '' : 'cursor-pointer'}`}>
+                          {choice}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              );
+            })}
 
+            {!userHasReviewed && (
               <Button
                 type="submit"
                 size="lg"
@@ -272,9 +247,9 @@ const ViewProjectPage = () => {
                 <Send className="w-4 h-4 mr-2" />
                 Submit Review
               </Button>
-            </form>
-          </Card>
-        )}
+            )}
+          </form>
+        </Card>
       </motion.div>
     </div>
   );

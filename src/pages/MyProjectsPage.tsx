@@ -35,7 +35,7 @@ const MyProjectsPage = () => {
     }
   };
 
-  const canGoNext = currentReview && (currentReview.reviewQuality > 0 || tempRating > 0);
+  const canGoNext = currentReview && (currentReview.reviewQuality > 0 || tempRating > 0) && currentReviewIndex < projectReviews.length - 1;
 
   const handleNext = () => {
     if (canGoNext && currentReviewIndex < projectReviews.length - 1) {
@@ -190,14 +190,15 @@ const MyProjectsPage = () => {
                         </div>
                         
                         <div className="text-right">
-                          <p className="text-sm text-muted-foreground mb-2">Rate this review</p>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            {currentReview.reviewQuality > 0 ? 'Edit Rating' : 'Rate this review'}
+                          </p>
                           <div className="flex gap-1">
                             {[1, 2, 3, 4, 5].map((star) => (
                               <button
                                 key={star}
                                 onClick={() => handleRateReview(star)}
                                 className="transition-transform hover:scale-110"
-                                disabled={currentReview.reviewQuality > 0}
                               >
                                 <Star
                                   className={`w-6 h-6 ${
@@ -231,14 +232,15 @@ const MyProjectsPage = () => {
                         ))}
                       </div>
 
-                      {!canGoNext && currentReviewIndex < projectReviews.length - 1 && (
-                        <p className="text-sm text-center text-muted-foreground pt-4">
-                          Rate this review to see the next one
-                        </p>
-                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
+
+                {!canGoNext && currentReviewIndex < projectReviews.length - 1 && (
+                  <p className="text-sm text-center text-muted-foreground pt-4">
+                    Rate this review to see the next one
+                  </p>
+                )}
               </Card>
             )}
           </div>
