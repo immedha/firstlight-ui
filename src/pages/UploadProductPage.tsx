@@ -273,67 +273,34 @@ const UploadProductPage = () => {
             
             {/* Feedback Objective with Generate Questions Button */}
             <div className="space-y-2">
-              <div className="flex gap-2 items-start">
-                <div className="flex-1">
-                  <Label htmlFor="feedbackObjective" className="text-xs">What feedback are you looking for? (Optional)</Label>
-                  <Textarea 
-                    id="feedbackObjective" 
-                    value={feedbackObjective} 
-                    onChange={(e) => setFeedbackObjective(e.target.value)} 
-                    placeholder="e.g., I want to understand user satisfaction, feature usage, and pain points" 
-                    rows={2} 
-                    className="text-sm" 
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    This will be shown to reviewers to help them provide targeted feedback
-                  </p>
-                </div>
-                <div className="pt-6">
+              <div>
+                <Label htmlFor="feedbackObjective" className="text-xs">What feedback are you looking for? (Optional)</Label>
+                <Textarea 
+                  id="feedbackObjective" 
+                  value={feedbackObjective} 
+                  onChange={(e) => setFeedbackObjective(e.target.value)} 
+                  placeholder="e.g., I want to understand user satisfaction, feature usage, and pain points" 
+                  rows={2} 
+                  className="text-sm" 
+                />
+                <div className="flex justify-end mt-1.5">
                   <Button 
                     type="button" 
                     onClick={handleGenerateQuestions} 
                     variant="default" 
                     size="sm"
                     disabled={isGenerating || !productName.trim() || !description.trim()}
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 whitespace-nowrap"
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 h-8 w-8 p-0 rounded-full"
                   >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    {isGenerating ? 'Generating...' : 'Generate Questions'}
+                    <Sparkles className="w-4 h-4" />
                   </Button>
                 </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  This will be shown to reviewers to help them provide targeted feedback
+                </p>
               </div>
             </div>
 
-            {!productName.trim() || !description.trim() ? (
-              <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <p className="text-sm text-blue-900 dark:text-blue-200">
-                  💡 Fill in the product name and description above to enable AI question generation.
-                </p>
-              </div>
-            ) : feedbackObjective.trim() ? (
-              <div className="p-4 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg">
-                <p className="text-sm text-purple-900 dark:text-purple-200">
-                  ✨ Click "Generate Questions" to let AI create up to 5 tailored survey questions based on your feedback objectives. Questions can be customized after generation.
-                </p>
-              </div>
-            ) : (
-              <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                <p className="text-sm text-amber-900 dark:text-amber-200">
-                  💡 Define what feedback you're looking for above to get more targeted AI-generated questions. You can also add questions manually.
-                </p>
-              </div>
-            )}
-
-            {questions.length === 0 && (
-              <div className="text-center py-6 border-2 border-dashed rounded-lg">
-                <p className="text-sm text-muted-foreground mb-2">
-                  No questions yet. Generate questions using AI or add them manually below.
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  You can add up to 6 questions (max 5 choice questions)
-                </p>
-              </div>
-            )}
             {questions.map((question, qIndex) => (
               <motion.div key={qIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-3 border rounded-md space-y-2">
                 <div className="flex items-start gap-2">

@@ -32,6 +32,13 @@ const MyProductsPage = () => {
 
   const currentReview: ReviewGiven | null = productReviews[currentReviewIndex] || null;
 
+  // Default to first product if none selected
+  useEffect(() => {
+    if (!selectedProductId && myProjects.length > 0) {
+      setSelectedProductId(myProjects[0].id);
+    }
+  }, [selectedProductId, myProjects]);
+
   const handlePublishProduct = (productId: string) => {
     dispatch(publishProjectAction({ projectId: productId }));
     toast.success('Product published!');
