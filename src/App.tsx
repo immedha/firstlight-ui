@@ -61,6 +61,7 @@ const App = () => (
               <Route path="/" element={<LandingPage />} />
               <Route path="/projects" element={<ProjectsPage />} />
               <Route path="/upload-project" element={<UploadProjectPage />} />
+              <Route path="/upload-project/:projectId" element={<UploadProjectPage />} />
               <Route path="/project/:projectId" element={<ViewProjectPage />} />
               <Route path="/my-projects" element={<MyProjectsPage />} />
               <Route path="*" element={<NotFound />} />

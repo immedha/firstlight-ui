@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { ExternalLink, MessageSquare } from 'lucide-react';
 
 const ProjectsPage = () => {
-  const projects = useAppSelector(state => state.projects.allProjects);
+  const allProjects = useAppSelector(state => state.projects.allProjects);
+  const projects = allProjects.filter(p => p.status === 'published');
 
   if (projects.length === 0) {
     return (

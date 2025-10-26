@@ -22,9 +22,11 @@ function* listenToAllProjects() {
         description: data.description || "",
         link: data.link || "",
         imageUrl: data.imageUrl || "",
+        images: data.images || undefined,
         createdAt: data.createdAt || "",
         reviewSchema: data.reviewSchema || [],
-        reviewsReceived: data.reviewsReceived || []
+        reviewsReceived: data.reviewsReceived || [],
+        status: data.status || 'draft'
       });
     });
     

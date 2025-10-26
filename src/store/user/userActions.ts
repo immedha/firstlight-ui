@@ -20,6 +20,28 @@ export interface createProjectActionFormat {
 
 export const createProjectAction = createAction<createProjectActionPayload>('user/createProjectAction');
 
+export interface updateProjectActionPayload extends createProjectActionPayload {
+  projectId: string;
+}
+
+export interface updateProjectActionFormat {
+  type: string;
+  payload: updateProjectActionPayload;
+}
+
+export const updateProjectAction = createAction<updateProjectActionPayload>('user/updateProjectAction');
+
+export interface publishProjectActionPayload {
+  projectId: string;
+}
+
+export interface publishProjectActionFormat {
+  type: string;
+  payload: publishProjectActionPayload;
+}
+
+export const publishProjectAction = createAction<publishProjectActionPayload>('user/publishProjectAction');
+
 export interface listenToUserUpdatesActionPayload {
   userId: string;
 }

@@ -16,6 +16,7 @@ export interface ProjectDatabaseData {
   createdAt: string;
   reviewSchema: ReviewSchema[];
   reviewsReceived: string[];
+  status: 'draft' | 'published';
 }
 export const initializeUserInDb = async (email: string, userId: string, displayName: string): Promise<void> => {
   try {
@@ -55,6 +56,7 @@ export const createProjectInDb = async (
     reviewSchema: ReviewSchema[];
     imageUrl?: string;
     images?: ProjectImage[];
+    status?: 'draft' | 'published';
   }
 ): Promise<void> => {
   try {
@@ -98,7 +100,8 @@ export const createProjectInDb = async (
       images: projectData.images, // Full array of images
       createdAt: formatDate(),
       reviewSchema: cleanedReviewSchema,
-      reviewsReceived: []
+      reviewsReceived: [],
+      status: projectData.status || 'draft' // Default to draft
     };
     // Create project document in projects collection
     const projectRef = doc(db, "projects", projectId);
@@ -130,7 +133,8 @@ export const getAllProjectsFromDb = async (): Promise<Project[]> => {
       images: data.images || undefined,
       createdAt: data.createdAt || "",
       reviewSchema: data.reviewSchema || [],
-      reviewsReceived: data.reviewsReceived || []
+      reviewsReceived: data.reviewsReceived || [],
+      status: data.status || 'draft'
     });
   });
   return projects;
@@ -296,5 +300,92 @@ export const getUserDisplayNameById = async (userId: string): Promise<string> =>
   } catch (error) {
     console.error("Error fetching user display name:", error);
     return `User ${userId.slice(0, 8)}`;
+  }
+}
+
+export const updateProjectInDb = async (
+  projectId: string,
+  projectData: {
+    name: string;
+    description: string;
+    link: string;
+    reviewSchema: ReviewSchema[];
+    imageUrl?: string;
+    images?: ProjectImage[];
+  }
+): Promise<void> => {
+  try {
+    const projectRef = doc(db, "projects", projectId);
+    const projectDoc = await getDoc(projectRef);
+    
+    if (!projectDoc.exists()) {
+      throw new Error("Project not found");
+    }
+    
+    const currentData = projectDoc.data();
+    if (currentData.status === 'published') {
+      throw new Error("Cannot edit published projects");
+    }
+    
+    // Filter out empty choices from review schema
+    const cleanedReviewSchema = projectData.reviewSchema.map(question => {
+      if (question.type === 'short-answer') {
+        return question;
+      }
+      
+      if (question.choices) {
+        const filteredChoices = question.choices.filter(choice => choice.trim() !== '');
+        return {
+          ...question,
+          choices: filteredChoices
+        };
+      }
+      
+      return question;
+    });
+    
+    // Determine the imageUrl
+    let imageUrl = projectData.imageUrl || '';
+    if (projectData.images && projectData.images.length > 0) {
+      const primaryImage = projectData.images.find(img => img.isPrimary);
+      if (primaryImage) {
+        imageUrl = primaryImage.url;
+      } else {
+        imageUrl = projectData.images[0].url;
+      }
+    }
+    
+    await updateDoc(projectRef, {
+      name: projectData.name,
+      description: projectData.description,
+      link: projectData.link,
+      reviewSchema: cleanedReviewSchema,
+      imageUrl: imageUrl,
+      images: projectData.images
+    });
+  } catch (error) {
+    throw Error(`Error updating project: ${error}`);
+  }
+}
+
+export const publishProjectInDb = async (projectId: string): Promise<void> => {
+  try {
+    const projectRef = doc(db, "projects", projectId);
+    const projectDoc = await getDoc(projectRef);
+    
+    if (!projectDoc.exists()) {
+      throw new Error("Project not found");
+    }
+    
+    const currentData = projectDoc.data();
+    if (currentData.status === 'published') {
+      throw new Error("Project is already published");
+    }
+    
+    await updateDoc(projectRef, {
+      status: 'published'
+    });
+  } catch (error) {
+    throw Error(`Error publishing project: ${error}`);
   }
 }

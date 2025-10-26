@@ -103,6 +103,26 @@ const ViewProjectPage = () => {
     );
   }
 
+  // Only allow viewing published projects
+  if (project.status === 'draft') {
+    return (
+      <div className="container mx-auto px-4 py-16">
+        <Card className="p-12 text-center max-w-2xl mx-auto">
+          <h2 className="text-2xl font-bold mb-4">Project Not Published</h2>
+          <p className="text-muted-foreground mb-6">
+            This project has not been published yet and cannot be viewed.
+          </p>
+          <Link to="/projects">
+            <Button variant="outline">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Projects
+            </Button>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
+
   const handleAnswerChange = (index: number, value: string | string[]) => {
     setAnswers({ ...answers, [index]: value });
   };

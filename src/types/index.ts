@@ -24,6 +24,7 @@ export interface Project {
   createdAt: string;
   reviewSchema: ReviewSchema[];
   reviewsReceived: string[];
+  status: 'draft' | 'published'; // New field for draft/publish status
 }
 
 export interface ReviewGiven {

@@ -1,15 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { createProjectAction } from '@/store/user/userActions';
+import { createProjectAction, updateProjectAction } from '@/store/user/userActions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Upload, Image as ImageIcon, Star, X } from 'lucide-react';
+import { Plus, Trash2, Upload, Image as ImageIcon, Star, X, Save } from 'lucide-react';
 import { ReviewSchema, ProjectImage } from '@/types';
 import { toast } from 'sonner';
 import { uploadMultipleImages, validateImageFile } from '@/lib/storageUtils';
@@ -18,6 +18,11 @@ const UploadProjectPage = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const userId = useAppSelector(state => state.user.userId);
+  const { projectId } = useParams<{ projectId: string }>();
+  
+  const existingProject = useAppSelector(state => 
+    state.projects.allProjects.find(p => p.id === projectId && p.founderId === userId)
+  );
   
   const [projectName, setProjectName] = useState('');
   const [description, setDescription] = useState('');
@@ -50,6 +55,23 @@ const UploadProjectPage = () => {
   const [questions, setQuestions] = useState<ReviewSchema[]>(defaultQuestions);
   const [uploadedImages, setUploadedImages] = useState<ProjectImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Load existing project data if editing
+  useEffect(() => {
+    if (existingProject && existingProject.status === 'draft') {
+      setProjectName(existingProject.name);
+      setDescription(existingProject.description);
+      setLink(existingProject.link);
+      setImageUrl(existingProject.imageUrl || '');
+      setQuestions(existingProject.reviewSchema);
+      if (existingProject.images) {
+        setUploadedImages(existingProject.images);
+      }
+    } else if (existingProject && existingProject.status === 'published') {
+      toast.error('Cannot edit published projects');
+      navigate('/my-projects');
+    }
+  }, [existingProject, navigate]);
 
   const addQuestion = () => {
     if (questions.length >= 6) {
@@ -144,7 +166,7 @@ const UploadProjectPage = () => {
     setUploadedImages(updated);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent, status: 'draft' | 'published') => {
     e.preventDefault();
 
     if (!userId) {
@@ -152,45 +174,59 @@ const UploadProjectPage = () => {
       return;
     }
 
-    // Validation
-    if (!projectName.trim() || !description.trim() || !link.trim()) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    if (questions.length === 0) {
-      toast.error('Please add at least one question');
-      return;
-    }
-
-    // Validate questions
-    for (const q of questions) {
-      if (!q.question.trim()) {
-        toast.error('All questions must have text');
+    // Validation for published projects
+    if (status === 'published') {
+      if (!projectName.trim() || !description.trim() || !link.trim()) {
+        toast.error('Please fill in all required fields');
         return;
       }
-      if (q.type !== 'short-answer') {
-        if (!q.choices || q.choices.length < 2) {
-          toast.error('Choice questions must have at least 2 options');
+
+      if (questions.length === 0) {
+        toast.error('Please add at least one question');
+        return;
+      }
+
+      // Validate questions
+      for (const q of questions) {
+        if (!q.question.trim()) {
+          toast.error('All questions must have text');
           return;
         }
-        if (q.choices.some(c => !c.trim())) {
-          toast.error('All answer choices must be filled');
-          return;
+        if (q.type !== 'short-answer') {
+          if (!q.choices || q.choices.length < 2) {
+            toast.error('Choice questions must have at least 2 options');
+            return;
+          }
+          if (q.choices.some(c => !c.trim())) {
+            toast.error('All answer choices must be filled');
+            return;
+          }
         }
       }
     }
 
-    dispatch(createProjectAction({
+    const projectData = {
       name: projectName.trim(),
       description: description.trim(),
       link: link.trim(),
       reviewSchema: questions,
       imageUrl: imageUrl.trim(), // Legacy field for backward compatibility
-      images: uploadedImages.length > 0 ? uploadedImages : undefined
-    }));
+      images: uploadedImages.length > 0 ? uploadedImages : undefined,
+      status
+    };
+
+    if (existingProject && existingProject.status === 'draft') {
+      // Update existing draft
+      dispatch(updateProjectAction({
+        ...projectData,
+        projectId: existingProject.id
+      }));
+    } else {
+      // Create new project
+      dispatch(createProjectAction(projectData));
+    }
     
-    navigate('/projects');
+    navigate('/my-projects');
   };
 
   return (
@@ -200,13 +236,17 @@ const UploadProjectPage = () => {
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-4">Upload Your Project</h1>
+          <h1 className="text-4xl font-bold mb-4">
+            {existingProject ? 'Edit Your Project' : 'Upload Your Project'}
+          </h1>
           <p className="text-muted-foreground text-lg">
-            Share your project and create custom review questions to get the feedback you need
+            {existingProject 
+              ? 'Update your draft project and publish when ready'
+              : 'Share your project and create custom review questions to get the feedback you need'}
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form className="space-y-8">
           {/* Project Details */}
           <Card className="p-6 space-y-4">
             <h2 className="text-xl font-semibold">Project Details</h2>
@@ -422,10 +462,27 @@ const UploadProjectPage = () => {
             ))}
           </Card>
 
-          <Button type="submit" size="lg" className="w-full gradient-primary text-white">
-            <Upload className="w-4 h-4 mr-2" />
-            Upload Project
-          </Button>
+          <div className="flex gap-4">
+            <Button 
+              type="submit" 
+              onClick={(e) => handleSubmit(e, 'draft')}
+              size="lg" 
+              variant="outline"
+              className="flex-1"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Save as Draft
+            </Button>
+            <Button 
+              type="submit" 
+              onClick={(e) => handleSubmit(e, 'published')}
+              size="lg" 
+              className="flex-1 gradient-primary text-white"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {existingProject && existingProject.status === 'draft' ? 'Publish' : 'Publish Project'}
+            </Button>
+          </div>
         </form>
       </motion.div>
     </div>

@@ -1,16 +1,20 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { updateReviewQualityAction } from '@/store/reviews/reviewsActions';
+import { publishProjectAction } from '@/store/user/userActions';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Upload, ChevronLeft, ChevronRight, Star, Edit, Send, Eye } from 'lucide-react';
 import { ReviewGiven } from '@/types';
+import { toast } from 'sonner';
 
 const MyProjectsPage = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const allProjects = useAppSelector(state => state.projects.allProjects);
   const allReviews = useAppSelector(state => state.reviews.allReviews);
   const userId = useAppSelector(state => state.user.userId);
@@ -27,6 +31,11 @@ const MyProjectsPage = () => {
     : [];
 
   const currentReview: ReviewGiven | null = projectReviews[currentReviewIndex] || null;
+
+  const handlePublishProject = (projectId: string) => {
+    dispatch(publishProjectAction({ projectId }));
+    toast.success('Project published successfully!');
+  };
 
   const handleRateReview = (rating: number) => {
     if (currentReview) {
@@ -114,7 +123,12 @@ const MyProjectsPage = () => {
             <SelectContent>
               {myProjects.map(project => (
                 <SelectItem key={project.id} value={project.id}>
-                  {project.name} ({project.reviewsReceived.length} reviews)
+                  <div className="flex items-center gap-2">
+                    {project.name}
+                    {project.status === 'draft' && (
+                      <Badge variant="secondary" className="text-xs">Draft</Badge>
+                    )}
+                  </div>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -124,22 +138,79 @@ const MyProjectsPage = () => {
         {selectedProject && (
           <div className="space-y-8">
             <Card className="p-6">
-              <h2 className="text-2xl font-bold mb-2">{selectedProject.name}</h2>
-              <p className="text-muted-foreground mb-4">{selectedProject.description}</p>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span>Total Reviews: {projectReviews.length}</span>
-                <a
-                  href={selectedProject.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  View Project
-                </a>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h2 className="text-2xl font-bold">{selectedProject.name}</h2>
+                    <Badge variant={selectedProject.status === 'draft' ? 'secondary' : 'default'}>
+                      {selectedProject.status === 'draft' ? 'Draft' : 'Published'}
+                    </Badge>
+                  </div>
+                  <p className="text-muted-foreground">{selectedProject.description}</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <span>Total Reviews: {projectReviews.length}</span>
+                  {selectedProject.status === 'published' && (
+                    <a
+                      href={selectedProject.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      View Project
+                    </a>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  {selectedProject.status === 'draft' && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/upload-project/${selectedProject.id}`)}
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="gradient-primary text-white"
+                        onClick={() => handlePublishProject(selectedProject.id)}
+                      >
+                        <Send className="w-4 h-4 mr-2" />
+                        Publish
+                      </Button>
+                    </>
+                  )}
+                  {selectedProject.status === 'published' && (
+                    <Link to={`/project/${selectedProject.id}`}>
+                      <Button variant="outline" size="sm">
+                        <Eye className="w-4 h-4 mr-2" />
+                        View
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               </div>
             </Card>
 
-            {projectReviews.length === 0 ? (
+            {selectedProject.status === 'draft' ? (
+              <Card className="p-12 text-center">
+                <h3 className="text-xl font-semibold mb-2">Project is a Draft</h3>
+                <p className="text-muted-foreground mb-4">
+                  Publish your project to start receiving reviews!
+                </p>
+                <Button
+                  onClick={() => handlePublishProject(selectedProject.id)}
+                  className="gradient-primary text-white"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  Publish Now
+                </Button>
+              </Card>
+            ) : projectReviews.length === 0 ? (
               <Card className="p-12 text-center">
                 <h3 className="text-xl font-semibold mb-2">No Reviews Yet</h3>
                 <p className="text-muted-foreground">
