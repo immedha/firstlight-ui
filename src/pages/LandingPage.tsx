@@ -23,11 +23,23 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0" style={{ background: 'var(--gradient-mesh)' }} />
+        
+        {/* Floating orbs */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-float" />
+        <div className="absolute top-40 right-20 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float-slow" style={{ animationDelay: '1s' }} />
+        <div className="absolute bottom-20 left-1/4 w-80 h-80 bg-secondary/20 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: '2s' }} />
+        
+        {/* Gradient mesh overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
+      </div>
+
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 gradient-hero opacity-5" />
-        <div className="container mx-auto px-4 py-12 sm:py-16 md:py-20 relative">
+        <div className="container mx-auto px-4 py-12 sm:py-16 md:py-20 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -73,8 +85,8 @@ const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-12 sm:py-16 bg-secondary/20">
-        <div className="container mx-auto px-4">
+      <section className="py-12 sm:py-16 relative">
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -96,13 +108,17 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1, duration: 0.5 }}
-                className="card-elevated p-4 sm:p-5 hover-lift group"
+                whileHover={{ y: -8, scale: 1.02 }}
+                className="card-elevated p-4 sm:p-5 group relative overflow-hidden"
               >
-                <div className="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                  <feature.icon className="w-5 h-5 text-white" />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center mb-3 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300" style={{ boxShadow: 'var(--shadow-glow)' }}>
+                    <feature.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-base sm:text-lg font-semibold mb-1.5">{feature.title}</h3>
+                  <p className="text-muted-foreground text-xs sm:text-sm">{feature.description}</p>
                 </div>
-                <h3 className="text-base sm:text-lg font-semibold mb-1.5">{feature.title}</h3>
-                <p className="text-muted-foreground text-xs sm:text-sm">{feature.description}</p>
               </motion.div>
             ))}
           </div>
@@ -110,8 +126,8 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 sm:py-16">
-        <div className="container mx-auto px-4">
+      <section className="py-12 sm:py-16 relative">
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -119,17 +135,40 @@ const LandingPage = () => {
             transition={{ duration: 0.5 }}
             className="card-elevated p-8 sm:p-10 text-center max-w-2xl mx-auto relative overflow-hidden"
           >
-            <div className="absolute inset-0 gradient-hero opacity-5" />
+            {/* Animated background gradient */}
+            <div className="absolute inset-0 opacity-30">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-accent animate-shimmer" 
+                   style={{ 
+                     backgroundSize: '200% 200%',
+                     filter: 'blur(60px)'
+                   }} 
+              />
+            </div>
+            
             <div className="relative">
-              <Zap className="w-10 h-10 mx-auto mb-4 text-primary animate-pulse" />
-              <h2 className="text-2xl sm:text-3xl font-bold mb-3">Ready to improve your product?</h2>
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  rotate: [0, 10, -10, 0]
+                }}
+                transition={{ 
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                <Zap className="w-10 h-10 mx-auto mb-4 text-primary" style={{ filter: 'drop-shadow(0 0 20px hsl(var(--primary) / 0.6))' }} />
+              </motion.div>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-3 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                Ready to improve your product?
+              </h2>
               <p className="text-muted-foreground text-sm sm:text-base mb-6">
                 Join the community of founders helping each other build better products
               </p>
               <Link to="/products">
-                <Button size="lg" className="gradient-primary text-white h-10 text-sm">
+                <Button size="lg" className="gradient-primary text-white h-10 text-sm group">
                   Browse Products
-                  <ArrowRight className="ml-2 w-4 h-4" />
+                  <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
             </div>
