@@ -19,6 +19,7 @@ import ProductsPage from "./pages/ProductsPage";
 import UploadProductPage from "./pages/UploadProductPage";
 import ViewProductPage from "./pages/ViewProductPage";
 import MyProductsPage from "./pages/MyProductsPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -69,6 +70,7 @@ const App = () => (
               <Route path="/add-product/:projectId" element={<ProtectedRoute><UploadProductPage /></ProtectedRoute>} />
               <Route path="/product/:projectId" element={<ViewProductPage />} />
               <Route path="/my-products" element={<ProtectedRoute><MyProductsPage /></ProtectedRoute>} />
+              <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

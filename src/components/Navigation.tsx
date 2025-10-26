@@ -1,11 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles, Grid3x3, Upload, FolderOpen, LogIn, LogOut, Trophy } from 'lucide-react';
+import { Grid3x3, Upload, FolderOpen, LogIn, LogOut, Trophy } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { signInAction, logOutAction } from '@/store/user/userActions';
 import { Button } from '@/components/ui/button';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { KARMA_CONFIG } from '@/lib/karmaConfig';
+import { Logo } from '@/components/Logo';
 
 const Navigation = () => {
   const location = useLocation();
@@ -44,11 +45,8 @@ const Navigation = () => {
     >
       <div className="container mx-auto px-3 sm:px-4">
         <div className="flex items-center justify-between h-14">
-          <Link to="/" className="flex items-center gap-1.5 group">
-            <Sparkles className="w-5 h-5 text-primary group-hover:animate-glow-pulse transition-all" />
-            <span className="text-base sm:text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              First User
-            </span>
+          <Link to="/" className="group">
+            <Logo showText={true} size="sm" />
           </Link>
 
           <div className="flex items-center gap-1">
@@ -82,12 +80,15 @@ const Navigation = () => {
             {userId ? (
               <HoverCard openDelay={0} closeDelay={0}>
                 <HoverCardTrigger asChild>
-                  <button className="flex items-center gap-1.5 ml-1 px-2 sm:px-3 py-1.5 rounded-md hover:bg-secondary/50 transition-all hover:scale-105 cursor-pointer">
+                  <Link
+                    to="/analytics"
+                    className="flex items-center gap-1.5 ml-1 px-2 sm:px-3 py-1.5 rounded-md hover:bg-secondary/50 transition-all hover:scale-105 cursor-pointer"
+                  >
                     <span className="text-xs font-medium hidden sm:inline">{displayName}</span>
                     <Trophy className={`w-4 h-4 ${
                       userTier === 1 ? 'text-yellow-500' : userTier === 2 ? 'text-blue-500' : 'text-gray-400'
                     }`} />
-                  </button>
+                  </Link>
                 </HoverCardTrigger>
                 <HoverCardContent className="w-56 p-3 space-y-2">
                   <div>
@@ -102,7 +103,16 @@ const Navigation = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="pt-2 border-t">
+                  <div className="pt-2 border-t space-y-2">
+                    <Link to="/analytics">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="w-full justify-start h-8 text-xs"
+                      >
+                        View Analytics
+                      </Button>
+                    </Link>
                     <Button 
                       variant="ghost" 
                       size="sm" 

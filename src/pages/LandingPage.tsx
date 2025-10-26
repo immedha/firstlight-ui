@@ -48,14 +48,14 @@ const LandingPage = () => {
             </motion.div>
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
-              Get feedback from
+              Get your first users
               <span className="block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                fellow founders
+              And find product-market fit
               </span>
             </h1>
 
             <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Share your products, receive structured feedback, and help other founders in a collaborative peer-to-peer loop
+            Where early products meet early users — and everyone wins through shared feedback and growth.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center">

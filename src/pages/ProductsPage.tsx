@@ -125,7 +125,7 @@ const ProductsPage = () => {
         </p>
       </motion.div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-3">
         {sortedProducts.map((product, index) => (
           <motion.div
             key={product.id}
@@ -150,7 +150,7 @@ const ProductsPage = () => {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-3xl font-bold text-primary/30">
+                        <span className="text-2xl font-bold text-primary/30">
                           {product.name.charAt(0)}
                         </span>
                       </div>
@@ -161,8 +161,8 @@ const ProductsPage = () => {
                     {product.reviewsReceived.length}
                   </div>
                 </div>
-                <div className="p-3 sm:p-4">
-                  <h3 className="font-semibold text-sm sm:text-base mb-1 line-clamp-1">{product.name}</h3>
+                <div className="p-2.5">
+                  <h3 className="font-semibold text-sm mb-1 line-clamp-1">{product.name}</h3>
                   <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
                     {product.description}
                   </p>
