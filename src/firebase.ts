@@ -7,13 +7,13 @@ import { getFunctions } from "firebase/functions";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_API_KEY,
-  authDomain: import.meta.env.VITE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_APP_ID,
-  measurementId: import.meta.env.VITE_MEASUREMENT_ID,
+  apiKey: "AIzaSyDmpD44C4ykQOldeW5te037CMfwKji8rF4",
+  authDomain: "firstlight-ui.firebaseapp.com",
+  projectId: "firstlight-ui",
+  storageBucket: "firstlight-ui.firebasestorage.app",
+  messagingSenderId: "487725473597",
+  appId: "1:487725473597:web:9e4b0e56fd64b1916f6f54",
+  measurementId: "G-RLX8RK359L",
 };
 
 // Initialize Firebase
