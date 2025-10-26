@@ -102,13 +102,13 @@ const ProductsPage = () => {
           <div className="w-16 h-16 rounded-full gradient-primary flex items-center justify-center mx-auto mb-6">
             <MessageSquare className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-3xl font-bold mb-4">No Projects Yet</h2>
+          <h2 className="text-3xl font-bold mb-4">No Products Yet</h2>
           <p className="text-muted-foreground mb-8">
-            Be the first to share your project and start the feedback exchange!
+            Be the first to share your product and start the feedback exchange!
           </p>
           <Link to="/upload-project">
             <Button size="lg" className="gradient-primary text-white">
-              Upload Your Project
+              Upload Your Product
             </Button>
           </Link>
         </motion.div>

@@ -87,13 +87,13 @@ const MyProductsPage = () => {
           <div className="w-16 h-16 rounded-full gradient-primary flex items-center justify-center mx-auto mb-6">
             <Upload className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-3xl font-bold mb-4">No Projects Yet</h2>
+          <h2 className="text-3xl font-bold mb-4">No Products Yet</h2>
           <p className="text-muted-foreground mb-8">
             Upload your first product to start receiving feedback from fellow founders!
           </p>
           <Link to="/upload-product">
             <Button size="lg" className="gradient-primary text-white">
-              Upload Your Project
+              Upload Your Product
             </Button>
           </Link>
         </motion.div>
@@ -108,14 +108,14 @@ const MyProductsPage = () => {
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-4">My Projects</h1>
+          <h1 className="text-4xl font-bold mb-4">My Products</h1>
           <p className="text-muted-foreground text-lg">
             View and manage feedback for your products
           </p>
         </div>
 
         <div className="mb-8">
-          <label className="block text-sm font-medium mb-2">Select a Project</label>
+          <label className="block text-sm font-medium mb-2">Select a Product</label>
           <Select value={selectedProjectId || ''} onValueChange={setSelectedProjectId}>
             <SelectTrigger className="w-full md:w-96">
               <SelectValue placeholder="Choose a product" />
@@ -159,7 +159,7 @@ const MyProductsPage = () => {
                       rel="noopener noreferrer"
                       className="text-primary hover:underline"
                     >
-                      View Project
+                      View Product
                     </a>
                   )}
                 </div>
@@ -198,7 +198,7 @@ const MyProductsPage = () => {
 
             {selectedProject.status === 'draft' ? (
               <Card className="p-12 text-center">
-                <h3 className="text-xl font-semibold mb-2">Project is a Draft</h3>
+                <h3 className="text-xl font-semibold mb-2">Product is a Draft</h3>
                 <p className="text-muted-foreground mb-4">
                   Publish your product to start receiving reviews!
                 </p>

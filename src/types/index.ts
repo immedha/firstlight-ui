@@ -8,19 +8,19 @@ export interface FilledReviewSchema extends ReviewSchema {
   answer: string | string[];
 }
 
-export interface ProjectImage {
+export interface ProductImage {
   url: string;
   isPrimary: boolean;
 }
 
-export interface Project {
+export interface Product {
   id: string;
   founderId: string;
   name: string;
   description: string;
   link: string;
   imageUrl: string; // Legacy field for backward compatibility
-  images?: ProjectImage[]; // New field for multiple images
+  images?: ProductImage[]; // New field for multiple images
   createdAt: string;
   reviewSchema: ReviewSchema[];
   reviewsReceived: string[];

@@ -121,7 +121,7 @@ const LandingPage = () => {
           >
             <div className="absolute inset-0 gradient-hero opacity-5" />
             <div className="relative">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to improve your project?</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to improve your product?</h2>
               <p className="text-muted-foreground text-lg mb-8">
                 Join the community of founders helping each other build better products
               </p>

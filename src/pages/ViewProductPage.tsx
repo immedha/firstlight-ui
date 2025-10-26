@@ -88,7 +88,7 @@ const ViewProductPage = () => {
     return (
       <div className="container mx-auto px-4 py-16">
         <Card className="p-12 text-center max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold mb-4">Project Not Found</h2>
+          <h2 className="text-2xl font-bold mb-4">Product Not Found</h2>
           <p className="text-muted-foreground mb-6">
             The product you're looking for doesn't exist or has been removed.
           </p>
@@ -108,7 +108,7 @@ const ViewProductPage = () => {
     return (
       <div className="container mx-auto px-4 py-16">
         <Card className="p-12 text-center max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold mb-4">Project Not Published</h2>
+          <h2 className="text-2xl font-bold mb-4">Product Not Published</h2>
           <p className="text-muted-foreground mb-6">
             This product has not been published yet and cannot be viewed.
           </p>
@@ -185,7 +185,7 @@ const ViewProductPage = () => {
         animate={{ opacity: 1, y: 0 }}
         className="space-y-4"
       >
-        {/* Project Info */}
+        {/* Product Info */}
         <Card className="overflow-hidden">
           <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 relative">
             {availableImages.length > 0 ? (
@@ -253,7 +253,7 @@ const ViewProductPage = () => {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-primary hover:underline text-sm"
             >
-              Visit Project Website
+              Visit Product Website
               <ExternalLink className="w-4 h-4" />
             </a>
           </div>

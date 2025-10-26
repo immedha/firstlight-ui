@@ -268,7 +268,7 @@ const UploadProductPage = () => {
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe your project in detail..."
+                placeholder="Describe your product in detail..."
                 rows={4}
                 required
               />
