@@ -170,7 +170,7 @@ const UploadProductPage = () => {
     e.preventDefault();
 
     if (!userId) {
-      toast.error('You must be signed in to upload a product');
+      toast.error('You must be signed in to add a product');
       return;
     }
 
@@ -237,7 +237,7 @@ const UploadProductPage = () => {
       >
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4">
-            {existingProduct ? 'Edit Your Product' : 'Upload Your Product'}
+            {existingProduct ? 'Edit Your Product' : 'Add Your Product'}
           </h1>
           <p className="text-muted-foreground text-lg">
             {existingProduct 

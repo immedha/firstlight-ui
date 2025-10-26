@@ -22,7 +22,7 @@ const Navigation = () => {
 
   // Auth-only nav items
   const authNavItems = userId ? [
-    { path: '/upload-project', label: 'Upload Product', icon: Upload },
+    { path: '/upload-project', label: 'Add Product', icon: Upload },
     { path: '/my-projects', label: 'My Products', icon: FolderOpen },
   ] : [];
 

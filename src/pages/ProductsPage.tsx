@@ -108,7 +108,7 @@ const ProductsPage = () => {
           </p>
           <Link to="/upload-project">
             <Button size="lg" className="gradient-primary text-white">
-              Upload Your Product
+              Add Your Product
             </Button>
           </Link>
         </motion.div>

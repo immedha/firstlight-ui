@@ -27,7 +27,7 @@ const MyProductsPage = () => {
   const selectedProject = myProjects.find(p => p.id === selectedProjectId);
   
   const productReviews = selectedProject
-    ? allReviews.filter(r => r.productId === selectedProject.id)
+    ? allReviews.filter(r => r.projectId === selectedProject.id)
     : [];
 
   const currentReview: ReviewGiven | null = productReviews[currentReviewIndex] || null;
@@ -89,11 +89,11 @@ const MyProductsPage = () => {
           </div>
           <h2 className="text-3xl font-bold mb-4">No Products Yet</h2>
           <p className="text-muted-foreground mb-8">
-            Upload your first product to start receiving feedback from fellow founders!
+            Add your first product to start receiving feedback from fellow founders!
           </p>
           <Link to="/upload-product">
             <Button size="lg" className="gradient-primary text-white">
-              Upload Your Product
+              Add Your Product
             </Button>
           </Link>
         </motion.div>

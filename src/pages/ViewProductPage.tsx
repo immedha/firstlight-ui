@@ -14,11 +14,11 @@ import { FilledReviewSchema, ReviewGiven } from '@/types';
 import { toast } from 'sonner';
 
 const ViewProductPage = () => {
-  const { productId } = useParams<{ productId: string }>();
+  const { projectId } = useParams<{ projectId: string }>();
   const dispatch = useAppDispatch();
   
   const product = useAppSelector(state => 
-    state.products.allProjects.find(p => p.id === productId)
+    state.projects.allProjects.find(p => p.id === projectId)
   );
 
   const userId = useAppSelector(state => state.user.userId);
@@ -26,8 +26,8 @@ const ViewProductPage = () => {
   const allReviews = useAppSelector(state => state.reviews.allReviews);
 
   const existingReviews = useMemo(() => 
-    allReviews.filter(r => r.productId === productId),
-    [allReviews, productId]
+    allReviews.filter(r => r.projectId === projectId),
+    [allReviews, projectId]
   );
 
   const [answers, setAnswers] = useState<{ [key: number]: string | string[] }>({});
@@ -164,7 +164,7 @@ const ViewProductPage = () => {
     }));
 
     dispatch(submitReviewAction({
-      productId: product.id,
+      projectId: product.id,
       filledReviewSchema: filledSchema
     }));
     

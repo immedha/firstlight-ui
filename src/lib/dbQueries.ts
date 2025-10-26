@@ -2,17 +2,17 @@ import { doc, setDoc, getDoc, updateDoc, arrayUnion, orderBy, query, getDocs, co
 import { db } from "../firebase";
 import { formatDate } from "./utils";
 import { v4 as uuidv4 } from 'uuid';
-import { FilledReviewSchema, Project, ProjectImage,ReviewGiven, ReviewSchema } from "@/types";
+import { FilledReviewSchema, Product, ProductImage, ReviewGiven, ReviewSchema } from "@/types";
 import { KARMA_CONFIG } from "./karmaConfig";
 
 
-export interface ProjectDatabaseData {
+export interface ProductDatabaseData {
   founderId: string;
   name: string;
   description: string;
   link: string;
   imageUrl: string;
-  images?: ProjectImage[];
+  images?: ProductImage[];
   createdAt: string;
   reviewSchema: ReviewSchema[];
   reviewsReceived: string[];
@@ -55,7 +55,7 @@ export const createProjectInDb = async (
     link: string;
     reviewSchema: ReviewSchema[];
     imageUrl?: string;
-    images?: ProjectImage[];
+    images?: ProductImage[];
     status?: 'draft' | 'published';
   }
 ): Promise<void> => {
@@ -122,11 +122,11 @@ export const createProjectInDb = async (
   }
 }
 
-export const getAllProjectsFromDb = async (): Promise<Project[]> => {
+export const getAllProjectsFromDb = async (): Promise<Product[]> => {
   const projectsRef = collection(db, "projects");
   const q = query(projectsRef, orderBy("createdAt", "desc"));
   const querySnapshot = await getDocs(q);
-  const projects: Project[] = [];
+  const projects: Product[] = [];
   querySnapshot.forEach((doc) => {
     const data = doc.data();
     projects.push({
@@ -317,7 +317,7 @@ export const updateProjectInDb = async (
     link: string;
     reviewSchema: ReviewSchema[];
     imageUrl?: string;
-    images?: ProjectImage[];
+    images?: ProductImage[];
   }
 ): Promise<void> => {
   try {
