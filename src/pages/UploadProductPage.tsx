@@ -29,34 +29,15 @@ const UploadProductPage = () => {
   const [link, setLink] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   
-  // Default review schema for web app MVPs
   const defaultQuestions: ReviewSchema[] = [
-    {
-      question: 'What did you think of the overall user experience?',
-      type: 'short-answer'
-    },
-    {
-      question: 'Which features would you use most?',
-      type: 'multiple-choice',
-      choices: ['Messaging', 'Analytics', 'Collaboration Tool']
-    },
-    {
-      question: 'What would you improve first?',
-      type: 'single-choice',
-      choices: ['Design', 'Performance/Speed', 'Feature completeness']
-    },
-    {
-      question: 'Would you recommend this to a friend?',
-      type: 'single-choice',
-      choices: ['Yes', 'No']
-    }
+    { question: 'What did you think of the overall user experience?', type: 'short-answer' },
+    { question: 'Which features would you use most?', type: 'multiple-choice', choices: ['Messaging', 'Analytics', 'Collaboration Tool'] },
   ];
   
   const [questions, setQuestions] = useState<ReviewSchema[]>(defaultQuestions);
   const [uploadedImages, setUploadedImages] = useState<ProductImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Load existing product data if editing
   useEffect(() => {
     if (existingProduct && existingProduct.status === 'draft') {
       setProductName(existingProduct.name);
@@ -64,9 +45,7 @@ const UploadProductPage = () => {
       setLink(existingProduct.link);
       setImageUrl(existingProduct.imageUrl || '');
       setQuestions(existingProduct.reviewSchema);
-      if (existingProduct.images) {
-        setUploadedImages(existingProduct.images);
-      }
+      if (existingProduct.images) setUploadedImages(existingProduct.images);
     } else if (existingProduct && existingProduct.status === 'published') {
       toast.error('Cannot edit published products');
       navigate('/my-products');
@@ -75,7 +54,7 @@ const UploadProductPage = () => {
 
   const addQuestion = () => {
     if (questions.length >= 6) {
-      toast.error('Maximum 6 questions allowed (1 short answer + 5 choice questions)');
+      toast.error('Maximum 6 questions allowed');
       return;
     }
     setQuestions([...questions, { question: '', type: 'single-choice', choices: ['', ''] }]);
@@ -117,10 +96,8 @@ const UploadProductPage = () => {
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    
     if (files.length === 0) return;
 
-    // Validate all files first
     for (const file of files) {
       const validation = validateImageFile(file);
       if (!validation.valid) {
@@ -130,27 +107,19 @@ const UploadProductPage = () => {
     }
 
     setIsUploading(true);
-
     try {
-      // Upload files to Firebase Storage
       const urls = await uploadMultipleImages(files, userId!);
-      
-      // Add uploaded images to state
       const newImages: ProductImage[] = urls.map((url, index) => ({
         url,
-        isPrimary: uploadedImages.length === 0 && index === 0 // First image is primary by default
+        isPrimary: uploadedImages.length === 0 && index === 0
       }));
-
       setUploadedImages([...uploadedImages, ...newImages]);
-      toast.success(`${files.length} image(s) uploaded successfully!`);
+      toast.success(`${files.length} image(s) uploaded!`);
     } catch (error) {
-      console.error('Error uploading images:', error);
       toast.error('Failed to upload images');
     } finally {
       setIsUploading(false);
     }
-
-    // Reset file input
     e.target.value = '';
   };
 
@@ -159,10 +128,7 @@ const UploadProductPage = () => {
   };
 
   const setPrimaryImage = (index: number) => {
-    const updated = uploadedImages.map((img, i) => ({
-      ...img,
-      isPrimary: i === index
-    }));
+    const updated = uploadedImages.map((img, i) => ({ ...img, isPrimary: i === index }));
     setUploadedImages(updated);
   };
 
@@ -170,37 +136,27 @@ const UploadProductPage = () => {
     e.preventDefault();
 
     if (!userId) {
-      toast.error('You must be signed in to add a product');
+      toast.error('Sign in to add a product');
       return;
     }
 
-    // Validation for published products
     if (status === 'published') {
       if (!productName.trim() || !description.trim() || !link.trim()) {
-        toast.error('Please fill in all required fields');
+        toast.error('Fill in all required fields');
         return;
       }
-
       if (questions.length === 0) {
-        toast.error('Please add at least one question');
+        toast.error('Add at least one question');
         return;
       }
-
-      // Validate questions
       for (const q of questions) {
         if (!q.question.trim()) {
           toast.error('All questions must have text');
           return;
         }
-        if (q.type !== 'short-answer') {
-          if (!q.choices || q.choices.length < 2) {
-            toast.error('Choice questions must have at least 2 options');
-            return;
-          }
-          if (q.choices.some(c => !c.trim())) {
-            toast.error('All answer choices must be filled');
-            return;
-          }
+        if (q.type !== 'short-answer' && (!q.choices || q.choices.length < 2 || q.choices.some(c => !c.trim()))) {
+          toast.error('Choice questions need at least 2 filled options');
+          return;
         }
       }
     }
@@ -210,157 +166,80 @@ const UploadProductPage = () => {
       description: description.trim(),
       link: link.trim(),
       reviewSchema: questions,
-      imageUrl: imageUrl.trim(), // Legacy field for backward compatibility
+      imageUrl: imageUrl.trim(),
       images: uploadedImages.length > 0 ? uploadedImages : undefined,
       status
     };
 
     if (existingProduct && existingProduct.status === 'draft') {
-      // Update existing draft
-      dispatch(updateProjectAction({
-        ...productData,
-        projectId: existingProduct.id
-      }));
+      dispatch(updateProjectAction({ ...productData, projectId: existingProduct.id }));
     } else {
-      // Create new product
       dispatch(createProjectAction(productData));
     }
-    
     navigate('/my-products');
   };
 
   return (
-    <div className="container mx-auto px-4 py-16 max-w-3xl">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-4">
-            {existingProduct ? 'Edit Your Product' : 'Add Your Product'}
+    <div className="container mx-auto px-4 py-6 sm:py-8 max-w-2xl">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">
+            {existingProduct ? 'Edit Product' : 'Add Product'}
           </h1>
-          <p className="text-muted-foreground text-lg">
-            {existingProduct 
-              ? 'Update your draft product and publish when ready'
-              : 'Share your product and create custom review questions to get the feedback you need'}
+          <p className="text-muted-foreground text-xs sm:text-sm">
+            {existingProduct ? 'Update your draft and publish when ready' : 'Share your product and create review questions'}
           </p>
         </div>
 
-        <form className="space-y-8">
-          {/* Product Details */}
-          <Card className="p-6 space-y-4">
-            <h2 className="text-xl font-semibold">Product Details</h2>
+        <form className="space-y-4">
+          <Card className="p-4 space-y-3">
+            <h2 className="text-base font-semibold">Product Details</h2>
             
             <div>
-              <Label htmlFor="productName">Product Name *</Label>
-              <Input
-                id="productName"
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
-                placeholder="My Awesome Startup"
-                required
-              />
+              <Label htmlFor="productName" className="text-xs">Product Name *</Label>
+              <Input id="productName" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="My Awesome Product" className="h-9 text-sm" />
             </div>
 
             <div>
-              <Label htmlFor="description">Description *</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe your product in detail..."
-                rows={4}
-                required
-              />
+              <Label htmlFor="description" className="text-xs">Description *</Label>
+              <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe your product..." rows={3} className="text-sm" />
             </div>
 
             <div>
-              <Label htmlFor="link">Website Link *</Label>
-              <Input
-                id="link"
-                type="url"
-                value={link}
-                onChange={(e) => setLink(e.target.value)}
-                placeholder="https://example.com"
-                required
-              />
+              <Label htmlFor="link" className="text-xs">Website Link *</Label>
+              <Input id="link" type="url" value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://example.com" className="h-9 text-sm" />
             </div>
 
             <div>
-              <Label htmlFor="imageUrl">Image URL (optional)</Label>
-              <Input
-                id="imageUrl"
-                type="url"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://example.com/image.png"
-              />
+              <Label htmlFor="imageUrl" className="text-xs">Image URL (optional)</Label>
+              <Input id="imageUrl" type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://example.com/image.png" className="h-9 text-sm" />
             </div>
 
-            {/* Image Upload */}
-            <div className="space-y-4">
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Upload Images (PNG or JPG, max 500KB each)</Label>
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/jpg"
-                  multiple
-                  onChange={handleFileChange}
-                  disabled={isUploading}
-                  className="hidden"
-                  id="image-upload"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => document.getElementById('image-upload')?.click()}
-                  disabled={isUploading}
-                >
-                  <ImageIcon className="w-4 h-4 mr-2" />
-                  {isUploading ? 'Uploading...' : 'Upload Images'}
+                <Label className="text-xs">Upload Images (PNG/JPG, max 500KB)</Label>
+                <input type="file" accept="image/png,image/jpeg,image/jpg" multiple onChange={handleFileChange} disabled={isUploading} className="hidden" id="image-upload" />
+                <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('image-upload')?.click()} disabled={isUploading} className="h-7 text-xs">
+                  <ImageIcon className="w-3 h-3 mr-1.5" />
+                  {isUploading ? 'Uploading...' : 'Upload'}
                 </Button>
               </div>
 
               {uploadedImages.length > 0 && (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-2">
                   {uploadedImages.map((img, index) => (
                     <div key={index} className="relative group">
-                      <div className="aspect-video border-2 rounded-lg overflow-hidden relative"
-                        style={{ borderColor: img.isPrimary ? 'rgb(var(--primary))' : 'transparent' }}>
-                        <img
-                          src={img.url}
-                          alt={`Upload ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => setPrimaryImage(index)}
-                            disabled={img.isPrimary}
-                          >
-                            <Star className={`w-4 h-4 mr-1 ${img.isPrimary ? 'fill-yellow-400 text-yellow-400' : ''}`} />
-                            {img.isPrimary ? 'Primary' : 'Set Primary'}
+                      <div className="aspect-video border rounded-md overflow-hidden relative" style={{ borderColor: img.isPrimary ? 'hsl(var(--primary))' : 'transparent', borderWidth: img.isPrimary ? '2px' : '1px' }}>
+                        <img src={img.url} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                          <Button type="button" variant="secondary" size="sm" onClick={() => setPrimaryImage(index)} disabled={img.isPrimary} className="h-6 text-xs px-2">
+                            <Star className={`w-3 h-3 ${img.isPrimary ? 'fill-yellow-400 text-yellow-400' : ''}`} />
                           </Button>
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => removeImage(index)}
-                          >
-                            <X className="w-4 h-4 mr-1" />
-                            Remove
+                          <Button type="button" variant="destructive" size="sm" onClick={() => removeImage(index)} className="h-6 text-xs px-2">
+                            <X className="w-3 h-3" />
                           </Button>
                         </div>
                       </div>
-                      {img.isPrimary && (
-                        <div className="absolute top-1 right-1 bg-primary text-primary-foreground px-2 py-1 rounded-md text-xs flex items-center gap-1">
-                          <Star className="w-3 h-3 fill-current" />
-                          Primary
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -368,119 +247,63 @@ const UploadProductPage = () => {
             </div>
           </Card>
 
-          {/* Review Questions */}
-          <Card className="p-6 space-y-6">
+          <Card className="p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Review Questions</h2>
-              <Button type="button" onClick={addQuestion} variant="outline" size="sm">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Question
+              <h2 className="text-base font-semibold">Review Questions</h2>
+              <Button type="button" onClick={addQuestion} variant="outline" size="sm" className="h-7 text-xs">
+                <Plus className="w-3 h-3 mr-1.5" />
+                Add
               </Button>
             </div>
 
-            {questions.length === 0 && (
-              <p className="text-muted-foreground text-sm">
-                Add questions to create your review schema (1 short answer + max 5 choice questions)
-              </p>
-            )}
-
             {questions.map((question, qIndex) => (
-              <motion.div
-                key={qIndex}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-4 border rounded-lg space-y-3"
-              >
+              <motion.div key={qIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-3 border rounded-md space-y-2">
                 <div className="flex items-start gap-2">
-                  <div className="flex-1 space-y-3">
-                    <Input
-                      value={question.question}
-                      onChange={(e) => updateQuestion(qIndex, 'question', e.target.value)}
-                      placeholder="Enter your question"
-                    />
-
-                    <Select
-                      value={question.type}
-                      onValueChange={(value) => updateQuestion(qIndex, 'type', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
+                  <div className="flex-1 space-y-2">
+                    <Input value={question.question} onChange={(e) => updateQuestion(qIndex, 'question', e.target.value)} placeholder="Question" className="h-8 text-xs" />
+                    <Select value={question.type} onValueChange={(value) => updateQuestion(qIndex, 'type', value)}>
+                      <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="short-answer">Short Answer</SelectItem>
                         <SelectItem value="single-choice">Single Choice</SelectItem>
                         <SelectItem value="multiple-choice">Multiple Choice</SelectItem>
                       </SelectContent>
                     </Select>
-
                     {question.type !== 'short-answer' && (
-                      <div className="space-y-2">
-                        <Label className="text-xs">Answer Choices</Label>
+                      <div className="space-y-1.5">
                         {question.choices?.map((choice, cIndex) => (
-                          <div key={cIndex} className="flex gap-2">
-                            <Input
-                              value={choice}
-                              onChange={(e) => updateChoice(qIndex, cIndex, e.target.value)}
-                              placeholder={`Choice ${cIndex + 1}`}
-                              className="text-sm"
-                            />
+                          <div key={cIndex} className="flex gap-1.5">
+                            <Input value={choice} onChange={(e) => updateChoice(qIndex, cIndex, e.target.value)} placeholder={`Choice ${cIndex + 1}`} className="h-7 text-xs" />
                             {question.choices!.length > 2 && (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeChoice(qIndex, cIndex)}
-                              >
-                                <Trash2 className="w-4 h-4" />
+                              <Button type="button" variant="ghost" size="sm" onClick={() => removeChoice(qIndex, cIndex)} className="h-7 w-7 p-0">
+                                <Trash2 className="w-3 h-3" />
                               </Button>
                             )}
                           </div>
                         ))}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => addChoice(qIndex)}
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add Choice
+                        <Button type="button" variant="outline" size="sm" onClick={() => addChoice(qIndex)} className="h-7 text-xs">
+                          <Plus className="w-3 h-3 mr-1.5" />
+                          Choice
                         </Button>
                       </div>
                     )}
                   </div>
-
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeQuestion(qIndex)}
-                  >
-                    <Trash2 className="w-4 h-4 text-destructive" />
+                  <Button type="button" variant="ghost" size="sm" onClick={() => removeQuestion(qIndex)} className="h-7 w-7 p-0">
+                    <Trash2 className="w-3 h-3 text-destructive" />
                   </Button>
                 </div>
               </motion.div>
             ))}
           </Card>
 
-          <div className="flex gap-4">
-            <Button 
-              type="submit" 
-              onClick={(e) => handleSubmit(e, 'draft')}
-              size="lg" 
-              variant="outline"
-              className="flex-1"
-            >
+          <div className="flex gap-2">
+            <Button type="submit" onClick={(e) => handleSubmit(e, 'draft')} size="lg" variant="outline" className="flex-1 h-10 text-sm">
               <Save className="w-4 h-4 mr-2" />
-              Save as Draft
+              Save Draft
             </Button>
-            <Button 
-              type="submit" 
-              onClick={(e) => handleSubmit(e, 'published')}
-              size="lg" 
-              className="flex-1 gradient-primary text-white"
-            >
+            <Button type="submit" onClick={(e) => handleSubmit(e, 'published')} size="lg" className="flex-1 gradient-primary text-white h-10 text-sm">
               <Upload className="w-4 h-4 mr-2" />
-              {existingProduct && existingProduct.status === 'draft' ? 'Publish' : 'Publish Product'}
+              Publish
             </Button>
           </div>
         </form>

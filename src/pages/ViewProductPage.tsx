@@ -22,7 +22,6 @@ const ViewProductPage = () => {
   );
 
   const userId = useAppSelector(state => state.user.userId);
-
   const allReviews = useAppSelector(state => state.reviews.allReviews);
 
   const existingReviews = useMemo(() => 
@@ -35,19 +34,16 @@ const ViewProductPage = () => {
   const [userReview, setUserReview] = useState<ReviewGiven | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Get available images
   const availableImages = useMemo(() => {
     if (product?.images && product.images.length > 0) {
       return product.images;
     }
-    // Fallback to imageUrl for backward compatibility
     if (product?.imageUrl) {
       return [{ url: product.imageUrl, isPrimary: true }];
     }
     return [];
   }, [product]);
 
-  // Reset image index when product or images change
   useEffect(() => {
     setCurrentImageIndex(0);
   }, [product?.id, product?.images]);
@@ -66,12 +62,10 @@ const ViewProductPage = () => {
 
   useEffect(() => {
     if (userId) {
-      // Check if this user already reviewed this product
       const review = existingReviews.find(r => r.reviewerId === userId);
       if (review) {
         setUserHasReviewed(true);
         setUserReview(review);
-        // Pre-fill answers with the existing review
         const filledAnswers: { [key: number]: string | string[] } = {};
         review.filledReviewSchema.forEach((schema, index) => {
           filledAnswers[index] = schema.answer;
@@ -86,14 +80,14 @@ const ViewProductPage = () => {
 
   if (!product) {
     return (
-      <div className="container mx-auto px-4 py-16">
-        <Card className="p-12 text-center max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold mb-4">Product Not Found</h2>
-          <p className="text-muted-foreground mb-6">
-            The product you're looking for doesn't exist or has been removed.
+      <div className="container mx-auto px-4 py-12">
+        <Card className="p-8 text-center max-w-md mx-auto">
+          <h2 className="text-xl font-bold mb-2">Product Not Found</h2>
+          <p className="text-muted-foreground text-sm mb-4">
+            The product doesn't exist or has been removed.
           </p>
           <Link to="/products">
-            <Button variant="outline">
+            <Button variant="outline" size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Products
             </Button>
@@ -103,17 +97,16 @@ const ViewProductPage = () => {
     );
   }
 
-  // Only allow viewing published products
   if (product.status === 'draft') {
     return (
-      <div className="container mx-auto px-4 py-16">
-        <Card className="p-12 text-center max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold mb-4">Product Not Published</h2>
-          <p className="text-muted-foreground mb-6">
-            This product has not been published yet and cannot be viewed.
+      <div className="container mx-auto px-4 py-12">
+        <Card className="p-8 text-center max-w-md mx-auto">
+          <h2 className="text-xl font-bold mb-2">Product Not Published</h2>
+          <p className="text-muted-foreground text-sm mb-4">
+            This product hasn't been published yet.
           </p>
           <Link to="/products">
-            <Button variant="outline">
+            <Button variant="outline" size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Products
             </Button>
@@ -149,7 +142,7 @@ const ViewProductPage = () => {
     e.preventDefault();
 
     if (!userId) {
-      toast.error('You must be signed in to submit a review');
+      toast.error('Sign in to submit a review');
       return;
     }
 
@@ -168,22 +161,22 @@ const ViewProductPage = () => {
       filledReviewSchema: filledSchema
     }));
     
-    toast.success('Review submitted successfully!');
+    toast.success('Review submitted!');
   };
 
   return (
-    <div className="container mx-auto px-4 py-16 max-w-4xl">
+    <div className="container mx-auto px-4 py-6 sm:py-8 max-w-3xl">
       <Link to="/products">
-        <Button variant="ghost" className="mb-6">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Products
+        <Button variant="ghost" size="sm" className="mb-4 h-8 text-xs">
+          <ArrowLeft className="w-3 h-3 mr-2" />
+          Back
         </Button>
       </Link>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-4"
+        className="space-y-3"
       >
         {/* Product Info */}
         <Card className="overflow-hidden">
@@ -196,37 +189,35 @@ const ViewProductPage = () => {
                   className="w-full h-full object-cover"
                 />
                 
-                {/* Navigation arrows - only show if more than one image */}
                 {availableImages.length > 1 && (
                   <>
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white h-8 w-8"
                       onClick={handlePrevImage}
                     >
-                      <ChevronLeft className="w-6 h-6" />
+                      <ChevronLeft className="w-5 h-5" />
                     </Button>
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white h-8 w-8"
                       onClick={handleNextImage}
                     >
-                      <ChevronRight className="w-6 h-6" />
+                      <ChevronRight className="w-5 h-5" />
                     </Button>
 
-                    {/* Image indicators */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
                       {availableImages.map((_, index) => (
                         <button
                           key={index}
-                          className={`w-2 h-2 rounded-full transition-all ${
+                          className={`h-1.5 rounded-full transition-all ${
                             index === currentImageIndex
-                              ? 'bg-white w-8'
-                              : 'bg-white/50'
+                              ? 'bg-white w-6'
+                              : 'bg-white/50 w-1.5'
                           }`}
                           onClick={() => setCurrentImageIndex(index)}
                         />
@@ -245,35 +236,38 @@ const ViewProductPage = () => {
           </div>
           
           <div className="p-4">
-            <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
-            <p className="text-sm mb-3 line-clamp-2">{product.description}</p>
+            <h1 className="text-xl font-bold mb-1.5">{product.name}</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mb-2">{product.description}</p>
             <a
               href={product.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-primary hover:underline text-sm"
+              className="inline-flex items-center gap-1.5 text-primary hover:underline text-xs"
             >
-              Visit Product Website
-              <ExternalLink className="w-4 h-4" />
+              Visit Website
+              <ExternalLink className="w-3 h-3" />
             </a>
           </div>
         </Card>
 
         {/* Review Form */}
-        <Card className="p-8">
-          <h2 className="text-2xl font-bold mb-6">
-            {userHasReviewed ? 'Your Review' : 'Leave Your Feedback'}
-          </h2>
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-lg font-bold">
+              {userHasReviewed ? 'Your Review' : 'Leave Feedback'}
+            </h2>
+            {userHasReviewed && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+          </div>
           
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {product.reviewSchema.map((schema, index) => {
               const userAnswer = userReview 
                 ? userReview.filledReviewSchema.find(s => s.question === schema.question)?.answer
                 : answers[index];
               
               return (
-              <div key={index} className="space-y-3">
-                <Label className="text-base">
+              <div key={index} className="space-y-2">
+                <Label className="text-xs sm:text-sm font-medium">
                   {index + 1}. {schema.question} *
                 </Label>
 
@@ -281,10 +275,10 @@ const ViewProductPage = () => {
                   <Textarea
                     value={(userAnswer as string) || ''}
                     onChange={(e) => !userHasReviewed && handleAnswerChange(index, e.target.value)}
-                    placeholder="Type your answer here..."
-                    rows={4}
+                    placeholder="Type your answer..."
+                    rows={3}
                     disabled={userHasReviewed}
-                    className={userHasReviewed ? 'bg-secondary/30' : ''}
+                    className={`text-sm ${userHasReviewed ? 'bg-secondary/30' : ''}`}
                   />
                 )}
 
@@ -296,8 +290,8 @@ const ViewProductPage = () => {
                   >
                     {schema.choices?.map((choice, cIndex) => (
                       <div key={cIndex} className="flex items-center space-x-2">
-                        <RadioGroupItem value={choice} id={`q${index}-c${cIndex}`} disabled={userHasReviewed} />
-                        <Label htmlFor={`q${index}-c${cIndex}`} className={`font-normal ${userHasReviewed ? '' : 'cursor-pointer'}`}>
+                        <RadioGroupItem value={choice} id={`q${index}-c${cIndex}`} disabled={userHasReviewed} className="h-3.5 w-3.5" />
+                        <Label htmlFor={`q${index}-c${cIndex}`} className={`text-xs font-normal ${userHasReviewed ? '' : 'cursor-pointer'}`}>
                           {choice}
                         </Label>
                       </div>
@@ -316,8 +310,9 @@ const ViewProductPage = () => {
                             !userHasReviewed && handleCheckboxChange(index, choice, checked as boolean)
                           }
                           disabled={userHasReviewed}
+                          className="h-3.5 w-3.5"
                         />
-                        <Label htmlFor={`q${index}-c${cIndex}`} className={`font-normal ${userHasReviewed ? '' : 'cursor-pointer'}`}>
+                        <Label htmlFor={`q${index}-c${cIndex}`} className={`text-xs font-normal ${userHasReviewed ? '' : 'cursor-pointer'}`}>
                           {choice}
                         </Label>
                       </div>
@@ -332,7 +327,7 @@ const ViewProductPage = () => {
               <Button
                 type="submit"
                 size="lg"
-                className="w-full gradient-primary text-white"
+                className="w-full gradient-primary text-white h-10 text-sm"
                 disabled={!allQuestionsAnswered()}
               >
                 <Send className="w-4 h-4 mr-2" />
