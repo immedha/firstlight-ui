@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { useAppDispatch } from "./store/hooks";
 import { store, RootState } from "./store/store";
@@ -53,28 +53,49 @@ const AuthListener = () => {
   return null;
 };
 
+// Redirect component to send users to /products after sign in
+const RedirectAfterSignIn = () => {
+  const userId = useSelector((state: RootState) => state.user.userId);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // If user is signed in and on the landing page, redirect to products
+    if (userId && location.pathname === '/') {
+      navigate('/products', { replace: true });
+    }
+  }, [userId, location.pathname, navigate]);
+
+  return null;
+};
+
+const AppContent = () => (
+  <TooltipProvider>
+    <AuthListener />
+    <RedirectAfterSignIn />
+    <Toaster />
+    <Sonner />
+    <div className="min-h-screen flex flex-col">
+      <Navigation />
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/products" element={<ProductsPage />} />
+        <Route path="/add-product" element={<ProtectedRoute><UploadProductPage /></ProtectedRoute>} />
+        <Route path="/add-product/:projectId" element={<ProtectedRoute><UploadProductPage /></ProtectedRoute>} />
+        <Route path="/product/:projectId" element={<ViewProductPage />} />
+        <Route path="/my-products" element={<ProtectedRoute><MyProductsPage /></ProtectedRoute>} />
+        <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </div>
+  </TooltipProvider>
+);
+
 const App = () => (
   <Provider store={store}>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <TooltipProvider>
-          <AuthListener />
-          <Toaster />
-          <Sonner />
-          <div className="min-h-screen flex flex-col">
-            <Navigation />
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/products" element={<ProductsPage />} />
-              <Route path="/add-product" element={<ProtectedRoute><UploadProductPage /></ProtectedRoute>} />
-              <Route path="/add-product/:projectId" element={<ProtectedRoute><UploadProductPage /></ProtectedRoute>} />
-              <Route path="/product/:projectId" element={<ViewProductPage />} />
-              <Route path="/my-products" element={<ProtectedRoute><MyProductsPage /></ProtectedRoute>} />
-              <Route path="/analytics" element={<AnalyticsPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </div>
-        </TooltipProvider>
+        <AppContent />
       </BrowserRouter>
     </QueryClientProvider>
   </Provider>
