@@ -9,10 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Upload, Image as ImageIcon, Star, X, Save } from 'lucide-react';
+import { Plus, Trash2, Upload, Image as ImageIcon, Star, X, Save, Sparkles } from 'lucide-react';
 import { ReviewSchema, ProductImage } from '@/types';
 import { toast } from 'sonner';
 import { uploadMultipleImages, validateImageFile } from '@/lib/storageUtils';
+import { generateSurveyQuestions, generateSurveyQuestionsFallback } from '@/lib/aiUtils';
 
 const UploadProductPage = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const UploadProductPage = () => {
   const [description, setDescription] = useState('');
   const [link, setLink] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [feedbackObjective, setFeedbackObjective] = useState('');
   
   const defaultQuestions: ReviewSchema[] = [
     { question: 'What did you think of the overall user experience?', type: 'short-answer' },
@@ -37,6 +39,7 @@ const UploadProductPage = () => {
   const [questions, setQuestions] = useState<ReviewSchema[]>(defaultQuestions);
   const [uploadedImages, setUploadedImages] = useState<ProductImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     if (existingProduct && existingProduct.status === 'draft') {
@@ -130,6 +133,37 @@ const UploadProductPage = () => {
   const setPrimaryImage = (index: number) => {
     const updated = uploadedImages.map((img, i) => ({ ...img, isPrimary: i === index }));
     setUploadedImages(updated);
+  };
+
+  const handleGenerateQuestions = async () => {
+    if (!productName.trim() || !description.trim()) {
+      toast.error('Please provide product name and description first');
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      toast.info('Generating survey questions...');
+      
+      const generatedQuestions = await generateSurveyQuestions(productName, description, feedbackObjective);
+      
+      setQuestions(generatedQuestions);
+      toast.success(`Generated ${generatedQuestions.length} survey questions!`);
+    } catch (error) {
+      console.error('Error generating questions:', error);
+      toast.error('Failed to generate questions. Please try again or add them manually.');
+      
+      // Try fallback method on error
+      try {
+        const fallbackQuestions = generateSurveyQuestionsFallback(productName, description, feedbackObjective);
+        setQuestions(fallbackQuestions);
+        toast.info('Using fallback questions');
+      } catch (fallbackError) {
+        console.error('Fallback also failed:', fallbackError);
+      }
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent, status: 'draft' | 'published') => {
@@ -249,13 +283,61 @@ const UploadProductPage = () => {
 
           <Card className="p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold">Review Questions</h2>
-              <Button type="button" onClick={addQuestion} variant="outline" size="sm" className="h-7 text-xs">
-                <Plus className="w-3 h-3 mr-1.5" />
-                Add
-              </Button>
+              <h2 className="text-xl font-semibold">Review Questions</h2>
+              <div className="flex gap-2">
+                <Button 
+                  type="button" 
+                  onClick={handleGenerateQuestions} 
+                  variant="default" 
+                  size="sm"
+                  disabled={isGenerating || !productName.trim() || !description.trim()}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {isGenerating ? 'Generating...' : 'Generate Questions'}
+                </Button>
+                <Button type="button" onClick={addQuestion} variant="outline" size="sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Question
+                </Button>
+              </div>
             </div>
 
+            {!productName.trim() || !description.trim() ? (
+              <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <p className="text-sm text-blue-900 dark:text-blue-200">
+                  💡 Fill in the product name and description above to enable AI question generation.
+                </p>
+              </div>
+            ) : (
+              <div className="p-4 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+                <p className="text-sm text-purple-900 dark:text-purple-200">
+                  ✨ Click "Generate Questions" to let AI create up to 5 tailored survey questions. 
+                  Specify what feedback you're looking for below to get more targeted questions. Questions can be customized after generation.
+                </p>
+              </div>
+            )}
+
+            {questions.length === 0 && (
+              <p className="text-muted-foreground text-sm">
+                Add questions to create your review schema (1 short answer + max 5 choice questions)
+              </p>
+            )}
+
+            <div>
+              <Label htmlFor="feedbackObjective" className="text-xs">What feedback are you looking for? (Optional)</Label>
+              <Textarea 
+                id="feedbackObjective" 
+                value={feedbackObjective} 
+                onChange={(e) => setFeedbackObjective(e.target.value)} 
+                placeholder="e.g., I want to understand user satisfaction, feature usage, and pain points" 
+                rows={2} 
+                className="text-sm" 
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Describe what kind of feedback you want from reviewers to help AI generate better questions
+              </p>
+            </div>
             {questions.map((question, qIndex) => (
               <motion.div key={qIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-3 border rounded-md space-y-2">
                 <div className="flex items-start gap-2">
