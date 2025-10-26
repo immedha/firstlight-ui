@@ -146,6 +146,12 @@ const ViewProductPage = () => {
       return;
     }
 
+    // Check if user is the product owner
+    if (userId === product.founderId) {
+      toast.error('You cannot review your own product');
+      return;
+    }
+
     if (!allQuestionsAnswered()) {
       toast.error('Please answer all questions');
       return;
@@ -163,6 +169,9 @@ const ViewProductPage = () => {
     
     toast.success('Review submitted!');
   };
+
+  // Check if user is the product owner
+  const isOwner = userId === product.founderId;
 
   return (
     <div className="container mx-auto px-4 py-6 sm:py-8 max-w-3xl">
@@ -250,14 +259,15 @@ const ViewProductPage = () => {
           </div>
         </Card>
 
-        {/* Review Form */}
-        <Card className="p-4 sm:p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-lg font-bold">
-              {userHasReviewed ? 'Your Review' : 'Leave Feedback'}
-            </h2>
-            {userHasReviewed && <CheckCircle2 className="w-5 h-5 text-green-500" />}
-          </div>
+        {/* Review Form - Hide for product owner */}
+        {!isOwner && (
+          <Card className="p-4 sm:p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <h2 className="text-lg font-bold">
+                {userHasReviewed ? 'Your Review' : 'Leave Feedback'}
+              </h2>
+              {userHasReviewed && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+            </div>
           
           {product.feedbackObjective && (
             <div className="mb-4 p-3 bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-lg">
@@ -343,6 +353,7 @@ const ViewProductPage = () => {
             )}
           </form>
         </Card>
+        )}
       </motion.div>
     </div>
   );

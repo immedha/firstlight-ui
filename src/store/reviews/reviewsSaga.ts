@@ -27,6 +27,14 @@ function* submitReview(action: submitReviewActionFormat) {
       return;
     }
 
+    // Check if user is trying to review their own product
+    const allProjects = store.getState().projects.allProjects;
+    const product = allProjects.find(p => p.id === action.payload.projectId);
+    if (product && product.founderId === userId) {
+      yield put(setPageStateInfoAction({ type: 'error', message: 'You cannot review your own product!' }));
+      return;
+    }
+
     const review: ReviewGiven = yield call(
       createReviewInDb, 
       userId, 
@@ -37,7 +45,7 @@ function* submitReview(action: submitReviewActionFormat) {
     yield put(setPageStateInfoAction({ type: 'success', message: 'Review submitted successfully!' }));
   } catch (error: any) {
     console.error(error);
-    yield put(setPageStateInfoAction({ type: 'error', message: 'Failed to submit review. Please try again!' }));
+    yield put(setPageStateInfoAction({ type: 'error', message: error.message || 'Failed to submit review. Please try again!' }));
   }
 }
 
