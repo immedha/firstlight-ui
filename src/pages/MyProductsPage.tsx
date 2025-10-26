@@ -12,7 +12,7 @@ import { Upload, ChevronLeft, ChevronRight, Star, Edit, Send, Eye } from 'lucide
 import { ReviewGiven } from '@/types';
 import { toast } from 'sonner';
 
-const MyProjectsPage = () => {
+const MyProductsPage = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const allProjects = useAppSelector(state => state.projects.allProjects);
@@ -26,15 +26,15 @@ const MyProjectsPage = () => {
   const myProjects = allProjects.filter(p => p.founderId === userId);
   const selectedProject = myProjects.find(p => p.id === selectedProjectId);
   
-  const projectReviews = selectedProject
-    ? allReviews.filter(r => r.projectId === selectedProject.id)
+  const productReviews = selectedProject
+    ? allReviews.filter(r => r.productId === selectedProject.id)
     : [];
 
-  const currentReview: ReviewGiven | null = projectReviews[currentReviewIndex] || null;
+  const currentReview: ReviewGiven | null = productReviews[currentReviewIndex] || null;
 
-  const handlePublishProject = (projectId: string) => {
-    dispatch(publishProjectAction({ projectId }));
-    toast.success('Project published successfully!');
+  const handlePublishProduct = (productId: string) => {
+    dispatch(publishProjectAction({ projectId: productId }));
+    toast.success('Product published successfully!');
   };
 
   const handleRateReview = (rating: number) => {
@@ -44,10 +44,10 @@ const MyProjectsPage = () => {
     }
   };
 
-  const canGoNext = currentReview && (currentReview.reviewQuality > 0 || tempRating > 0) && currentReviewIndex < projectReviews.length - 1;
+  const canGoNext = currentReview && (currentReview.reviewQuality > 0 || tempRating > 0) && currentReviewIndex < productReviews.length - 1;
 
   const handleNext = () => {
-    if (canGoNext && currentReviewIndex < projectReviews.length - 1) {
+    if (canGoNext && currentReviewIndex < productReviews.length - 1) {
       setCurrentReviewIndex(currentReviewIndex + 1);
       setTempRating(0);
     }
@@ -66,7 +66,7 @@ const MyProjectsPage = () => {
         <Card className="p-12 text-center max-w-2xl mx-auto">
           <h2 className="text-2xl font-bold mb-4">Sign In Required</h2>
           <p className="text-muted-foreground mb-6">
-            Please sign in to view your uploaded projects.
+            Please sign in to view your uploaded products.
           </p>
           <Link to="/">
             <Button className="gradient-primary text-white">Go Home</Button>
@@ -89,9 +89,9 @@ const MyProjectsPage = () => {
           </div>
           <h2 className="text-3xl font-bold mb-4">No Projects Yet</h2>
           <p className="text-muted-foreground mb-8">
-            Upload your first project to start receiving feedback from fellow founders!
+            Upload your first product to start receiving feedback from fellow founders!
           </p>
-          <Link to="/upload-project">
+          <Link to="/upload-product">
             <Button size="lg" className="gradient-primary text-white">
               Upload Your Project
             </Button>
@@ -110,7 +110,7 @@ const MyProjectsPage = () => {
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4">My Projects</h1>
           <p className="text-muted-foreground text-lg">
-            View and manage feedback for your projects
+            View and manage feedback for your products
           </p>
         </div>
 
@@ -118,14 +118,14 @@ const MyProjectsPage = () => {
           <label className="block text-sm font-medium mb-2">Select a Project</label>
           <Select value={selectedProjectId || ''} onValueChange={setSelectedProjectId}>
             <SelectTrigger className="w-full md:w-96">
-              <SelectValue placeholder="Choose a project" />
+              <SelectValue placeholder="Choose a product" />
             </SelectTrigger>
             <SelectContent>
-              {myProjects.map(project => (
-                <SelectItem key={project.id} value={project.id}>
+              {myProjects.map(product => (
+                <SelectItem key={product.id} value={product.id}>
                   <div className="flex items-center gap-2">
-                    {project.name}
-                    {project.status === 'draft' && (
+                    {product.name}
+                    {product.status === 'draft' && (
                       <Badge variant="secondary" className="text-xs">Draft</Badge>
                     )}
                   </div>
@@ -151,7 +151,7 @@ const MyProjectsPage = () => {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span>Total Reviews: {projectReviews.length}</span>
+                  <span>Total Reviews: {productReviews.length}</span>
                   {selectedProject.status === 'published' && (
                     <a
                       href={selectedProject.link}
@@ -169,7 +169,7 @@ const MyProjectsPage = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => navigate(`/upload-project/${selectedProject.id}`)}
+                        onClick={() => navigate(`/upload-product/${selectedProject.id}`)}
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
@@ -177,7 +177,7 @@ const MyProjectsPage = () => {
                       <Button
                         size="sm"
                         className="gradient-primary text-white"
-                        onClick={() => handlePublishProject(selectedProject.id)}
+                        onClick={() => handlePublishProduct(selectedProject.id)}
                       >
                         <Send className="w-4 h-4 mr-2" />
                         Publish
@@ -185,7 +185,7 @@ const MyProjectsPage = () => {
                     </>
                   )}
                   {selectedProject.status === 'published' && (
-                    <Link to={`/project/${selectedProject.id}`}>
+                    <Link to={`/product/${selectedProject.id}`}>
                       <Button variant="outline" size="sm">
                         <Eye className="w-4 h-4 mr-2" />
                         View
@@ -200,28 +200,28 @@ const MyProjectsPage = () => {
               <Card className="p-12 text-center">
                 <h3 className="text-xl font-semibold mb-2">Project is a Draft</h3>
                 <p className="text-muted-foreground mb-4">
-                  Publish your project to start receiving reviews!
+                  Publish your product to start receiving reviews!
                 </p>
                 <Button
-                  onClick={() => handlePublishProject(selectedProject.id)}
+                  onClick={() => handlePublishProduct(selectedProject.id)}
                   className="gradient-primary text-white"
                 >
                   <Send className="w-4 h-4 mr-2" />
                   Publish Now
                 </Button>
               </Card>
-            ) : projectReviews.length === 0 ? (
+            ) : productReviews.length === 0 ? (
               <Card className="p-12 text-center">
                 <h3 className="text-xl font-semibold mb-2">No Reviews Yet</h3>
                 <p className="text-muted-foreground">
-                  Share your project to start receiving feedback!
+                  Share your product to start receiving feedback!
                 </p>
               </Card>
             ) : (
               <Card className="p-8">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-semibold">
-                    Review {currentReviewIndex + 1} of {projectReviews.length}
+                    Review {currentReviewIndex + 1} of {productReviews.length}
                   </h3>
                   <div className="flex items-center gap-2">
                     <Button
@@ -236,7 +236,7 @@ const MyProjectsPage = () => {
                       variant="outline"
                       size="sm"
                       onClick={handleNext}
-                      disabled={!canGoNext || currentReviewIndex === projectReviews.length - 1}
+                      disabled={!canGoNext || currentReviewIndex === productReviews.length - 1}
                     >
                       <ChevronRight className="w-4 h-4" />
                     </Button>
@@ -307,7 +307,7 @@ const MyProjectsPage = () => {
                   )}
                 </AnimatePresence>
 
-                {!canGoNext && currentReviewIndex < projectReviews.length - 1 && (
+                {!canGoNext && currentReviewIndex < productReviews.length - 1 && (
                   <p className="text-sm text-center text-muted-foreground pt-4">
                     Rate this review to see the next one
                   </p>
@@ -321,4 +321,4 @@ const MyProjectsPage = () => {
   );
 };
 
-export default MyProjectsPage;
+export default MyProductsPage;

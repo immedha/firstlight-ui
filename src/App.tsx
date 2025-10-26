@@ -15,10 +15,10 @@ import { listenToAllProjectsAction } from "./store/projects/projectsActions";
 import { listenToYourReviewsAction } from "./store/reviews/reviewsActions";
 import Navigation from "./components/Navigation";
 import LandingPage from "./pages/LandingPage";
-import ProjectsPage from "./pages/ProjectsPage";
-import UploadProjectPage from "./pages/UploadProjectPage";
-import ViewProjectPage from "./pages/ViewProjectPage";
-import MyProjectsPage from "./pages/MyProjectsPage";
+import ProductsPage from "./pages/ProductsPage";
+import UploadProductPage from "./pages/UploadProductPage";
+import ViewProductPage from "./pages/ViewProductPage";
+import MyProductsPage from "./pages/MyProductsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -86,11 +86,11 @@ const App = () => (
             <Navigation />
             <Routes>
               <Route path="/" element={<LandingPage />} />
-              <Route path="/projects" element={<ProjectsPage />} />
-              <Route path="/upload-project" element={<UploadProjectPage />} />
-              <Route path="/upload-project/:projectId" element={<UploadProjectPage />} />
-              <Route path="/project/:projectId" element={<ViewProjectPage />} />
-              <Route path="/my-projects" element={<MyProjectsPage />} />
+              <Route path="/projects" element={<ProductsPage />} />
+              <Route path="/upload-project" element={<UploadProductPage />} />
+              <Route path="/upload-project/:projectId" element={<UploadProductPage />} />
+              <Route path="/project/:projectId" element={<ViewProductPage />} />
+              <Route path="/my-projects" element={<MyProductsPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

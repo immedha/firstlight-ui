@@ -10,21 +10,21 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, Upload, Image as ImageIcon, Star, X, Save } from 'lucide-react';
-import { ReviewSchema, ProjectImage } from '@/types';
+import { ReviewSchema, ProductImage } from '@/types';
 import { toast } from 'sonner';
 import { uploadMultipleImages, validateImageFile } from '@/lib/storageUtils';
 
-const UploadProjectPage = () => {
+const UploadProductPage = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const userId = useAppSelector(state => state.user.userId);
   const { projectId } = useParams<{ projectId: string }>();
   
-  const existingProject = useAppSelector(state => 
+  const existingProduct = useAppSelector(state => 
     state.projects.allProjects.find(p => p.id === projectId && p.founderId === userId)
   );
   
-  const [projectName, setProjectName] = useState('');
+  const [productName, setProductName] = useState('');
   const [description, setDescription] = useState('');
   const [link, setLink] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -53,25 +53,25 @@ const UploadProjectPage = () => {
   ];
   
   const [questions, setQuestions] = useState<ReviewSchema[]>(defaultQuestions);
-  const [uploadedImages, setUploadedImages] = useState<ProjectImage[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<ProductImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Load existing project data if editing
+  // Load existing product data if editing
   useEffect(() => {
-    if (existingProject && existingProject.status === 'draft') {
-      setProjectName(existingProject.name);
-      setDescription(existingProject.description);
-      setLink(existingProject.link);
-      setImageUrl(existingProject.imageUrl || '');
-      setQuestions(existingProject.reviewSchema);
-      if (existingProject.images) {
-        setUploadedImages(existingProject.images);
+    if (existingProduct && existingProduct.status === 'draft') {
+      setProductName(existingProduct.name);
+      setDescription(existingProduct.description);
+      setLink(existingProduct.link);
+      setImageUrl(existingProduct.imageUrl || '');
+      setQuestions(existingProduct.reviewSchema);
+      if (existingProduct.images) {
+        setUploadedImages(existingProduct.images);
       }
-    } else if (existingProject && existingProject.status === 'published') {
-      toast.error('Cannot edit published projects');
+    } else if (existingProduct && existingProduct.status === 'published') {
+      toast.error('Cannot edit published products');
       navigate('/my-projects');
     }
-  }, [existingProject, navigate]);
+  }, [existingProduct, navigate]);
 
   const addQuestion = () => {
     if (questions.length >= 6) {
@@ -136,7 +136,7 @@ const UploadProjectPage = () => {
       const urls = await uploadMultipleImages(files, userId!);
       
       // Add uploaded images to state
-      const newImages: ProjectImage[] = urls.map((url, index) => ({
+      const newImages: ProductImage[] = urls.map((url, index) => ({
         url,
         isPrimary: uploadedImages.length === 0 && index === 0 // First image is primary by default
       }));
@@ -170,13 +170,13 @@ const UploadProjectPage = () => {
     e.preventDefault();
 
     if (!userId) {
-      toast.error('You must be signed in to upload a project');
+      toast.error('You must be signed in to upload a product');
       return;
     }
 
-    // Validation for published projects
+    // Validation for published products
     if (status === 'published') {
-      if (!projectName.trim() || !description.trim() || !link.trim()) {
+      if (!productName.trim() || !description.trim() || !link.trim()) {
         toast.error('Please fill in all required fields');
         return;
       }
@@ -205,8 +205,8 @@ const UploadProjectPage = () => {
       }
     }
 
-    const projectData = {
-      name: projectName.trim(),
+    const productData = {
+      name: productName.trim(),
       description: description.trim(),
       link: link.trim(),
       reviewSchema: questions,
@@ -215,15 +215,15 @@ const UploadProjectPage = () => {
       status
     };
 
-    if (existingProject && existingProject.status === 'draft') {
+    if (existingProduct && existingProduct.status === 'draft') {
       // Update existing draft
       dispatch(updateProjectAction({
-        ...projectData,
-        projectId: existingProject.id
+        ...productData,
+        projectId: existingProduct.id
       }));
     } else {
-      // Create new project
-      dispatch(createProjectAction(projectData));
+      // Create new product
+      dispatch(createProjectAction(productData));
     }
     
     navigate('/my-projects');
@@ -237,26 +237,26 @@ const UploadProjectPage = () => {
       >
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4">
-            {existingProject ? 'Edit Your Project' : 'Upload Your Project'}
+            {existingProduct ? 'Edit Your Product' : 'Upload Your Product'}
           </h1>
           <p className="text-muted-foreground text-lg">
-            {existingProject 
-              ? 'Update your draft project and publish when ready'
-              : 'Share your project and create custom review questions to get the feedback you need'}
+            {existingProduct 
+              ? 'Update your draft product and publish when ready'
+              : 'Share your product and create custom review questions to get the feedback you need'}
           </p>
         </div>
 
         <form className="space-y-8">
-          {/* Project Details */}
+          {/* Product Details */}
           <Card className="p-6 space-y-4">
-            <h2 className="text-xl font-semibold">Project Details</h2>
+            <h2 className="text-xl font-semibold">Product Details</h2>
             
             <div>
-              <Label htmlFor="projectName">Project Name *</Label>
+              <Label htmlFor="productName">Product Name *</Label>
               <Input
-                id="projectName"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
+                id="productName"
+                value={productName}
+                onChange={(e) => setProductName(e.target.value)}
                 placeholder="My Awesome Startup"
                 required
               />
@@ -480,7 +480,7 @@ const UploadProjectPage = () => {
               className="flex-1 gradient-primary text-white"
             >
               <Upload className="w-4 h-4 mr-2" />
-              {existingProject && existingProject.status === 'draft' ? 'Publish' : 'Publish Project'}
+              {existingProduct && existingProduct.status === 'draft' ? 'Publish' : 'Publish Product'}
             </Button>
           </div>
         </form>
@@ -489,4 +489,4 @@ const UploadProjectPage = () => {
   );
 };
 
-export default UploadProjectPage;
+export default UploadProductPage;

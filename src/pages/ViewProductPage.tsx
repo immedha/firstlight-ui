@@ -13,12 +13,12 @@ import { ExternalLink, ArrowLeft, Send, CheckCircle2, ChevronLeft, ChevronRight 
 import { FilledReviewSchema, ReviewGiven } from '@/types';
 import { toast } from 'sonner';
 
-const ViewProjectPage = () => {
-  const { projectId } = useParams<{ projectId: string }>();
+const ViewProductPage = () => {
+  const { productId } = useParams<{ productId: string }>();
   const dispatch = useAppDispatch();
   
-  const project = useAppSelector(state => 
-    state.projects.allProjects.find(p => p.id === projectId)
+  const product = useAppSelector(state => 
+    state.products.allProjects.find(p => p.id === productId)
   );
 
   const userId = useAppSelector(state => state.user.userId);
@@ -26,8 +26,8 @@ const ViewProjectPage = () => {
   const allReviews = useAppSelector(state => state.reviews.allReviews);
 
   const existingReviews = useMemo(() => 
-    allReviews.filter(r => r.projectId === projectId),
-    [allReviews, projectId]
+    allReviews.filter(r => r.productId === productId),
+    [allReviews, productId]
   );
 
   const [answers, setAnswers] = useState<{ [key: number]: string | string[] }>({});
@@ -37,20 +37,20 @@ const ViewProjectPage = () => {
 
   // Get available images
   const availableImages = useMemo(() => {
-    if (project?.images && project.images.length > 0) {
-      return project.images;
+    if (product?.images && product.images.length > 0) {
+      return product.images;
     }
     // Fallback to imageUrl for backward compatibility
-    if (project?.imageUrl) {
-      return [{ url: project.imageUrl, isPrimary: true }];
+    if (product?.imageUrl) {
+      return [{ url: product.imageUrl, isPrimary: true }];
     }
     return [];
-  }, [project]);
+  }, [product]);
 
-  // Reset image index when project or images change
+  // Reset image index when product or images change
   useEffect(() => {
     setCurrentImageIndex(0);
-  }, [project?.id, project?.images]);
+  }, [product?.id, product?.images]);
 
   const handleNextImage = () => {
     if (availableImages.length > 0) {
@@ -66,7 +66,7 @@ const ViewProjectPage = () => {
 
   useEffect(() => {
     if (userId) {
-      // Check if this user already reviewed this project
+      // Check if this user already reviewed this product
       const review = existingReviews.find(r => r.reviewerId === userId);
       if (review) {
         setUserHasReviewed(true);
@@ -84,15 +84,15 @@ const ViewProjectPage = () => {
     }
   }, [existingReviews, userId]);
 
-  if (!project) {
+  if (!product) {
     return (
       <div className="container mx-auto px-4 py-16">
         <Card className="p-12 text-center max-w-2xl mx-auto">
           <h2 className="text-2xl font-bold mb-4">Project Not Found</h2>
           <p className="text-muted-foreground mb-6">
-            The project you're looking for doesn't exist or has been removed.
+            The product you're looking for doesn't exist or has been removed.
           </p>
-          <Link to="/projects">
+          <Link to="/products">
             <Button variant="outline">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Projects
@@ -103,16 +103,16 @@ const ViewProjectPage = () => {
     );
   }
 
-  // Only allow viewing published projects
-  if (project.status === 'draft') {
+  // Only allow viewing published products
+  if (product.status === 'draft') {
     return (
       <div className="container mx-auto px-4 py-16">
         <Card className="p-12 text-center max-w-2xl mx-auto">
           <h2 className="text-2xl font-bold mb-4">Project Not Published</h2>
           <p className="text-muted-foreground mb-6">
-            This project has not been published yet and cannot be viewed.
+            This product has not been published yet and cannot be viewed.
           </p>
-          <Link to="/projects">
+          <Link to="/products">
             <Button variant="outline">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Projects
@@ -137,7 +137,7 @@ const ViewProjectPage = () => {
   };
 
   const allQuestionsAnswered = () => {
-    return project.reviewSchema.every((_, index) => {
+    return product.reviewSchema.every((_, index) => {
       const answer = answers[index];
       if (!answer) return false;
       if (Array.isArray(answer)) return answer.length > 0;
@@ -158,13 +158,13 @@ const ViewProjectPage = () => {
       return;
     }
 
-    const filledSchema: FilledReviewSchema[] = project.reviewSchema.map((schema, index) => ({
+    const filledSchema: FilledReviewSchema[] = product.reviewSchema.map((schema, index) => ({
       ...schema,
       answer: answers[index]
     }));
 
     dispatch(submitReviewAction({
-      projectId: project.id,
+      productId: product.id,
       filledReviewSchema: filledSchema
     }));
     
@@ -173,7 +173,7 @@ const ViewProjectPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-16 max-w-4xl">
-      <Link to="/projects">
+      <Link to="/products">
         <Button variant="ghost" className="mb-6">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Projects
@@ -192,7 +192,7 @@ const ViewProjectPage = () => {
               <div className="relative w-full h-full">
                 <img
                   src={availableImages[currentImageIndex].url}
-                  alt={project.name}
+                  alt={product.name}
                   className="w-full h-full object-cover"
                 />
                 
@@ -238,17 +238,17 @@ const ViewProjectPage = () => {
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <span className="text-4xl font-bold text-primary/30">
-                  {project.name.charAt(0)}
+                  {product.name.charAt(0)}
                 </span>
               </div>
             )}
           </div>
           
           <div className="p-4">
-            <h1 className="text-2xl font-bold mb-2">{project.name}</h1>
-            <p className="text-sm mb-3 line-clamp-2">{project.description}</p>
+            <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
+            <p className="text-sm mb-3 line-clamp-2">{product.description}</p>
             <a
-              href={project.link}
+              href={product.link}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-primary hover:underline text-sm"
@@ -266,7 +266,7 @@ const ViewProjectPage = () => {
           </h2>
           
           <form onSubmit={handleSubmit} className="space-y-6">
-            {project.reviewSchema.map((schema, index) => {
+            {product.reviewSchema.map((schema, index) => {
               const userAnswer = userReview 
                 ? userReview.filledReviewSchema.find(s => s.question === schema.question)?.answer
                 : answers[index];
@@ -346,4 +346,4 @@ const ViewProjectPage = () => {
   );
 };
 
-export default ViewProjectPage;
+export default ViewProductPage;

@@ -9,7 +9,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase';
 import { KARMA_CONFIG } from '@/lib/karmaConfig';
 
-const ProjectsPage = () => {
+const ProductsPage = () => {
   const allProjects = useAppSelector(state => state.projects.allProjects);
   const userId = useAppSelector(state => state.user.userId);
   const userKarma = useAppSelector(state => state.user.karmaPoints);
@@ -130,46 +130,46 @@ const ProjectsPage = () => {
       </motion.div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sortedProjects.map((project, index) => (
+        {sortedProjects.map((product, index) => (
           <motion.div
-            key={project.id}
+            key={product.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
           >
-            <Link to={`/project/${project.id}`}>
+            <Link to={`/project/${product.id}`}>
               <Card className="overflow-hidden hover-lift cursor-pointer">
                 <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 relative overflow-hidden">
                   {(() => {
                     // Use primary image from images array if available, otherwise use imageUrl
                     const displayImageUrl = 
-                      project.images?.find(img => img.isPrimary)?.url || 
-                      project.images?.[0]?.url || 
-                      project.imageUrl;
+                      product.images?.find(img => img.isPrimary)?.url || 
+                      product.images?.[0]?.url || 
+                      product.imageUrl;
                     
                     return displayImageUrl ? (
                       <img
                         src={displayImageUrl}
-                        alt={project.name}
+                        alt={product.name}
                         className="w-full h-full object-cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <span className="text-4xl font-bold text-primary/30">
-                          {project.name.charAt(0)}
+                          {product.name.charAt(0)}
                         </span>
                       </div>
                     );
                   })()}
                   <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm px-2 py-1 rounded-md text-xs flex items-center gap-1">
                     <MessageSquare className="w-3 h-3" />
-                    {project.reviewsReceived.length}
+                    {product.reviewsReceived.length}
                   </div>
                 </div>
                 <div className="p-6">
-                  <h3 className="font-semibold text-lg mb-2 line-clamp-1">{project.name}</h3>
+                  <h3 className="font-semibold text-lg mb-2 line-clamp-1">{product.name}</h3>
                   <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                    {project.description}
+                    {product.description}
                   </p>
                   <div className="flex items-center justify-end text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
@@ -187,4 +187,4 @@ const ProjectsPage = () => {
   );
 };
 
-export default ProjectsPage;
+export default ProductsPage;
