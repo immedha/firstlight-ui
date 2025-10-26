@@ -42,5 +42,12 @@ export const KARMA_CONFIG = {
     if (tier === 2) return "Mid";
     return "Bad";
   },
+  
+  // Get capitalized tier name for display
+  getTierNameCapitalized: (tier: number): string => {
+    if (tier === 1) return "Great";
+    if (tier === 2) return "Mid";
+    return "Bad";
+  },
 };
 

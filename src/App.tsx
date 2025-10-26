@@ -4,8 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useEffect } from "react";
-import { useAppDispatch } from "./store/hooks";
+import { useEffect, useRef } from "react";
+import { useAppDispatch, useAppSelector } from "./store/hooks";
 import { store } from "./store/store";
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -26,8 +26,35 @@ const queryClient = new QueryClient();
 // Auth listener component
 const AuthListener = () => {
   const dispatch = useAppDispatch();
+  const karmaPoints = useAppSelector(state => state.user.karmaPoints);
+  const currentKarma = useRef<number>(0);
+  
+  // Watch for karma changes and show notifications
+  useEffect(() => {
+    if (currentKarma.current > 0 && karmaPoints !== currentKarma.current) {
+      const change = karmaPoints - currentKarma.current;
+      const message = change > 0 
+        ? `Karma increased by ${change}! You now have ${karmaPoints} points.`
+        : `Karma decreased by ${Math.abs(change)}. You now have ${karmaPoints} points.`;
+      
+      // Show browser notification
+      if (Notification.permission === 'granted') {
+        new Notification('Karma Update', {
+          body: message,
+          icon: '/favicon.ico',
+        });
+      }
+    }
+    
+    currentKarma.current = karmaPoints;
+  }, [karmaPoints]);
   
   useEffect(() => {
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+    
     // Listen to projects updates
     dispatch(listenToAllProjectsAction());
     

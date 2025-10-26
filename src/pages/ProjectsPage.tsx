@@ -1,15 +1,71 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAppSelector } from '@/store/hooks';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, MessageSquare } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/firebase';
+import { KARMA_CONFIG } from '@/lib/karmaConfig';
 
 const ProjectsPage = () => {
   const allProjects = useAppSelector(state => state.projects.allProjects);
   const projects = allProjects.filter(p => p.status === 'published');
+  const userId = useAppSelector(state => state.user.userId);
+  const userKarma = useAppSelector(state => state.user.karmaPoints);
+  const [filteredProjects, setFilteredProjects] = useState<typeof projects>([]);
+  const [loading, setLoading] = useState(true);
 
-  if (projects.length === 0) {
+  useEffect(() => {
+    const filterProjectsByTier = async () => {
+      if (!userId) {
+        // Not logged in - show all projects
+        setFilteredProjects(projects);
+        setLoading(false);
+        return;
+      }
+
+      // User is logged in - filter by tier
+      const userTier = KARMA_CONFIG.getTier(userKarma);
+      const filtered: typeof projects = [];
+
+      for (const project of projects) {
+        try {
+          const founderRef = doc(db, 'users', project.founderId);
+          const founderDoc = await getDoc(founderRef);
+          
+          if (founderDoc.exists()) {
+            const founderKarma = founderDoc.data().karmaPoints || 0;
+            const founderTier = KARMA_CONFIG.getTier(founderKarma);
+            
+            if (founderTier === userTier) {
+              filtered.push(project);
+            }
+          }
+        } catch (error) {
+          console.error('Error checking founder tier:', error);
+        }
+      }
+
+      setFilteredProjects(filtered);
+      setLoading(false);
+    };
+
+    filterProjectsByTier();
+  }, [projects, userId, userKarma]);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-16">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading projects...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (filteredProjects.length === 0) {
     return (
       <div className="container mx-auto px-4 py-16">
         <motion.div
@@ -48,7 +104,7 @@ const ProjectsPage = () => {
       </motion.div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {projects.map((project, index) => (
+        {filteredProjects.map((project, index) => (
           <motion.div
             key={project.id}
             initial={{ opacity: 0, y: 20 }}
