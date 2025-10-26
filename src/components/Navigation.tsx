@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Grid3x3, Upload, FolderOpen, LogIn, LogOut, Trophy } from 'lucide-react';
+import { Grid3x3, Upload, FolderOpen, LogIn, LogOut, Trophy, ExternalLink } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { signInAction, logOutAction } from '@/store/user/userActions';
 import { Button } from '@/components/ui/button';
@@ -80,19 +80,25 @@ const Navigation = () => {
             {userId ? (
               <HoverCard openDelay={0} closeDelay={0}>
                 <HoverCardTrigger asChild>
-                  <Link
-                    to="/analytics"
-                    className="flex items-center gap-1.5 ml-1 px-2 sm:px-3 py-1.5 rounded-md hover:bg-secondary/50 transition-all hover:scale-105 cursor-pointer"
-                  >
+                  <button className="flex items-center gap-1.5 ml-1 px-2 sm:px-3 py-1.5 rounded-md transition-all hover:scale-105 cursor-pointer">
                     <span className="text-xs font-medium hidden sm:inline">{displayName}</span>
                     <Trophy className={`w-4 h-4 ${
                       userTier === 1 ? 'text-yellow-500' : userTier === 2 ? 'text-blue-500' : 'text-gray-400'
                     }`} />
-                  </Link>
+                  </button>
                 </HoverCardTrigger>
                 <HoverCardContent className="w-56 p-3 space-y-2">
                   <div>
-                    <p className="text-xs font-medium mb-1">Karma Points</p>
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-xs font-medium">Karma Points</p>
+                      <Link 
+                        to="/analytics" 
+                        target="_blank"
+                        className="text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                      </Link>
+                    </div>
                     <div className="flex items-center gap-2">
                       <Trophy className={`w-4 h-4 ${
                         userTier === 1 ? 'text-yellow-500' : userTier === 2 ? 'text-blue-500' : 'text-gray-400'
@@ -103,16 +109,7 @@ const Navigation = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="pt-2 border-t space-y-2">
-                    <Link to="/analytics">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="w-full justify-start h-8 text-xs"
-                      >
-                        View Analytics
-                      </Button>
-                    </Link>
+                  <div className="pt-2 border-t">
                     <Button 
                       variant="ghost" 
                       size="sm" 
